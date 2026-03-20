@@ -878,12 +878,6 @@
     <div class="section-label">Single-Prompt App Design 1/2</div>
     <div class="slide-title">Submit Our First Prompt</div>
 
-    <div class="screenshot-bleed" style="max-width:100%;">
-      <img src="https://lh3.googleusercontent.com/d/1jAgXLA8xfD_8bpm-bBvFnDVfhrVNSwME" alt="Example app output — garish, unstyled">
-    </div>
-    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Example output from our first prompt — unstyled and basic, but it works.</p>
-    <hr class="screenshot-caption divider">
-
     <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
       <svg viewBox="-20 -10 240 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
         <style>.checklist-base{fill:#f9f8f4;stroke:#ada191;stroke-width:4}.checklist-clip{fill:#ada191}.check-mark-scaled{fill:none;stroke:#66995e;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.faux-text-scaled{fill:none;stroke:#ada191;stroke-width:2.5;stroke-linecap:round}.req-text{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:1px}</style>
@@ -946,7 +940,7 @@
     <div class="screenshot-bleed" style="max-width:100%;">
       <img src="https://lh3.googleusercontent.com/d/1t-NSEAtAvvHO1egy197OXQ_cBPy_QjVF" alt="Example app output — clean, modern">
     </div>
-    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Example output from our first prompt — your results may look different from mine.</p>
+    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Example output from our first prompt. Your results may look different.</p>
     <hr class="screenshot-caption divider">
 
     <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
@@ -1064,7 +1058,7 @@
 
     <div style="margin-left:146px;">
       <div class="prompt-block">
-        <div class="prompt-label">Sub-prompt 1 — Filter buttons</div>
+        <div class="prompt-label">Step 1 — Add category filter buttons</div>
         <div class="prompt-text" id="prompt-tag1">Add a row of filter buttons above the notes list, one for each unique category in the notes. Clicking a button shows only notes with that category. Include an "All" button that shows every note.</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-tag1', this)">Copy</button>
       </div>
@@ -1081,7 +1075,7 @@
     <div class="screenshot-bleed" style="max-width:100%;">
       <img src="https://lh3.googleusercontent.com/d/1cyE2mezs4MFO-vLKT_-zhjvIt_c1BJwL" alt="Unified search and filter toolbar">
     </div>
-    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Screenshot showing the unified search and filter toolbar — search input on the left, category filter on the right.</p>
+    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Now with a unified search and filter toolbar.</p>
     <hr class="screenshot-caption divider">
 
     <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
@@ -1122,7 +1116,7 @@
     <div style="margin-left:146px;">
 
       <div class="prompt-block">
-        <div class="prompt-label">Sub-prompt 2 — Unified search toolbar</div>
+        <div class="prompt-label">Step 2 — Redesign as a unified toolbar</div>
         <div class="prompt-text" id="prompt-tag2">Redesign the search area as a single unified toolbar: a full-width container with the search input on the left taking up most of the width, and a 'Filter by category' button on the right inside the same container, separated by a vertical divider. Clicking the button opens a dropdown list of all available categories plus an 'All' option at the top. Selecting a category filters the notes list and updates the button label to show the selected category. The button label can be removed by clicking an "x".</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-tag2', this)">Copy</button>
       </div>
@@ -1137,7 +1131,7 @@
       </div>
 
       <div class="prompt-block">
-        <div class="prompt-label">Sub-prompt 3 — Dynamic categories</div>
+        <div class="prompt-label">Step 3 — Bug fix: if new categories don't appear in the dropdown</div>
         <div class="prompt-text" id="prompt-tag3">When a new note is added, update the filter buttons to include any new category, and make sure the new note appears correctly when its category filter is selected.</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-tag3', this)">Copy</button>
       </div>
@@ -1172,7 +1166,7 @@
         <strong>Build something on your own</strong>
         <ul>
           <li>I'll circulate — raise your hand if you get stuck</li>
-          <li>Choose an option below and paste the prompt directly into Antigravity</li>
+          <li>Choose feature(s) below and paste the prompt directly into Antigravity</li>
           <li>Test it thoroughly, click around like a real user would</li>
           <li>If something breaks, tell the model what you expected vs. what happened</li>
           <li>Stuck badly? Type "revert to previous version" to undo the last change</li>
@@ -1183,32 +1177,32 @@
 
     <div style="margin-left:146px;">
       <div class="prompt-block">
-        <div class="prompt-label">Option 1 — Dark mode</div>
+        <div class="prompt-label">Feature 1 — Dark mode</div>
         <div class="prompt-text" id="prompt-dark">Add a dark mode toggle button. Clicking it switches the app to a dark color scheme. Clicking it again switches back.</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-dark', this)">Copy</button>
       </div>
       <div class="prompt-block">
-        <div class="prompt-label">Option 2 — Sort order</div>
+        <div class="prompt-label">Feature 2 — Sort order</div>
         <div class="prompt-text" id="prompt-sort">Add a sort control to the right side of the unified search toolbar, separated from the category filter by a vertical divider. It should be a button labeled 'Sort: Newest' by default. Clicking it toggles the notes list between newest-first and oldest-first order, and updates the button label to reflect the current sort direction.</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-sort', this)">Copy</button>
       </div>
       <div class="prompt-block">
-        <div class="prompt-label">Option 3 — Edit notes</div>
+        <div class="prompt-label">Feature 3 — Edit notes</div>
         <div class="prompt-text" id="prompt-edit">Make each note card clickable. Clicking anywhere on a note populates the form with that note's content and changes the Save button label to 'Update Note'. Saving updates the existing note in place. Add a small subtle 'cancel' text link next to the Update Note button that clears the form and returns it to new-note mode.</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-edit', this)">Copy</button>
       </div>
       <div class="prompt-block">
-        <div class="prompt-label">Option 4 — Delete notes</div>
+        <div class="prompt-label">Feature 4 — Delete notes</div>
         <div class="prompt-text" id="prompt-delete">Add a small round delete button in the top-right corner of each note card, no larger than 20px, showing only an ✕ symbol. It should be visible by default without changing any other styling on the card. Clicking it asks the user to confirm before permanently removing the note.</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-delete', this)">Copy</button>
       </div>
       <div class="prompt-block">
-        <div class="prompt-label">Option 5 — Export Notes</div>
+        <div class="prompt-label">Feature 5 — Export notes</div>
         <div class="prompt-text" id="prompt-export">Add a fixed footer bar spanning the full width of both columns, matching the current app design. Place a right-aligned Export CSV button inside it that downloads all notes as a CSV file with columns for title, date, category, and body.</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-export', this)">Copy</button>
       </div>
       <div class="prompt-block" style="background:#4a4a4a;border-color:#666;">
-        <div class="prompt-label" style="color:#9acd9a;">Option 6 — Your Own Idea</div>
+        <div class="prompt-label" style="color:#9acd9a;">Feature 6 — Your own idea</div>
         <div class="prompt-text" style="color:#d4d4d4;">Describe your feature, what triggers it, what changes in the UI, and any edge cases. Avoid vague words — say exactly what you want to see. If the result isn't right, prompt again to fix, or type "Revert to previous version" to undo the last update.</div>
       </div>
     </div>
@@ -1218,7 +1212,7 @@
        SLIDE 12 — Working Like a Pro: .rules
   ════════════════════════════════════════════════ -->
   <div class="slide" id="slide-13">
-    <div class="section-label">Section 5 · Working Like a Pro</div>
+    <div class="section-label">Professional Workflows 1/2</div>
     <div class="slide-title">Persistent Instructions</div>
 
     <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
@@ -1241,6 +1235,7 @@
         <ul>
           <li>Encode decisions upfront so you don't repeat yourself in every prompt</li>
           <li>These are project-specific rules, but most tools also support global defaults</li>
+          <li>Note the "Handoff" section under Context Management — critical for long sessions</li>
           <li>Rules file conventions are evolving — research before use</li>
         </ul>
         <span style="display:block;margin-top:8px;font-family:'Courier New',monospace;font-size:0.82rem;color:var(--gray-dark);">Antigravity: ~/&lt;your-project&gt;/.agent/rules/project.mdc</span>
@@ -1288,6 +1283,7 @@
 <span class="value">  - Real-time search (matches title/body).</span>
 <span class="value">  - Dynamic filtering (category list grows as new categories are typed).</span>
 <span class="value">  - Single-page state management (no reloads).</span>
+    <button class="copy-btn" onclick="copyRulesBlock(this)">Copy</button>
     </div>
     </div>
   </div>
@@ -1296,8 +1292,14 @@
        SLIDE 13 — Curated Pro Prompts
   ════════════════════════════════════════════════ -->
   <div class="slide" id="slide-14">
-    <div class="section-label">Section 5 · Working Like a Pro</div>
-    <div class="slide-title">Curated Prompt Sequence</div>
+    <div class="section-label">Professional Workflows 2/2</div>
+    <div class="slide-title">Single prompt with ten features, drawing from rules file</div>
+
+    <div class="screenshot-bleed" style="max-width:100%;">
+      <img src="https://lh3.googleusercontent.com/d/1_cxiO_0MR3QOslP20OKnxtMT0tgYFmQQ" alt="Completed single-prompt app with all features">
+    </div>
+    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Our completed single-prompt app with all the bells and whistles.</p>
+    <hr class="screenshot-caption divider">
 
     <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
       <svg viewBox="-20 -10 240 180" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
@@ -1327,9 +1329,20 @@
     </div>
 
     <div style="margin-left:146px;">
+      <div class="theme-chips">
+        <div style="width:100%;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;font-size:0.85rem;color:var(--gray-mid);margin-bottom:8px;">Select a theme, click the "Copy" button, then paste into Antigravity:</div>
+        <div style="width:100%;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+          <span class="chip" onclick="selectTheme2(this, 'research')">research</span>
+          <span class="chip" onclick="selectTheme2(this, 'recipes')">recipes</span>
+          <span class="chip" onclick="selectTheme2(this, 'fitness')">fitness</span>
+          <span class="chip" onclick="selectTheme2(this, 'travel')">travel</span>
+          <span class="chip" onclick="selectTheme2(this, 'movies')">movies</span>
+          <span class="chip" onclick="selectTheme2(this, 'generic')">generic</span>
+        </div>
+      </div>
       <div class="prompt-block">
         <div class="prompt-label">Single prompt for app with all 10 features</div>
-        <div class="prompt-text" id="prompt-pro1">Create a personal knowledge base app. Populate it with 12 sample notes related to [THEME]. Add a full-width search bar that filters notes in real time as the user types. Add a row of category filter buttons above the notes list, including an "All" button. Then redesign the search and filter controls as a single unified toolbar: search input on the left, category filter dropdown button on the right, separated by a vertical divider, with an "x" to clear the selected category. When a new note is added, update the category filter dropdown to include any new category. Add a dark mode toggle button. Add a sort button to the right of the unified toolbar labeled 'Sort: Newest' that toggles between newest-first and oldest-first. Make note cards clickable — clicking one loads it into the form for editing, with a cancel link to return to new-note mode. Add a small round ✕ delete button in the top-right corner of each note card that confirms before deleting. Add a footer with a right-aligned Export CSV button that downloads all notes with title, date, category, and body columns.</div>
+        <div class="prompt-text" id="prompt-pro1">First, read and follow .agent/rules/.project.mdc. Then, create a personal knowledge base app with 12 sample <span class="placeholder" id="theme-placeholder-2">research</span> notes. Include a unified toolbar with: real-time search (left), a vertical divider, a dynamic category dropdown with a clear 'x' (right), and a 'Sort: Newest/Oldest' toggle. Add a dark mode toggle. Make note cards clickable to load into an edit form (with a cancel option) and add a top-right '✕' delete button that requires confirmation. Finally, add a footer with a right-aligned Export CSV button (title, date, category, body).</div>
         <button class="copy-btn" onclick="copyPrompt('prompt-pro1', this)">Copy</button>
       </div>
     </div>
@@ -1415,6 +1428,17 @@
 
   let selectedTheme = '[THEME]';
 
+  function selectTheme2(chip, theme) {
+    document.querySelectorAll('#slide-14 .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const placeholder = document.getElementById('theme-placeholder-2');
+    if (placeholder) {
+      placeholder.textContent = theme;
+      placeholder.style.background = '#2d4a2d';
+      placeholder.style.color = '#6a9955';
+    }
+  }
+
   function selectTheme(chip, theme) {
     selectedTheme = theme;
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -1440,6 +1464,28 @@
     });
     text = text.trim();
 
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => flashCopied(btn));
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      flashCopied(btn);
+    }
+  }
+
+  function copyRulesBlock(btn) {
+    const block = btn.closest('.rules-block');
+    const text = Array.from(block.childNodes)
+      .filter(n => n.nodeName !== 'BUTTON')
+      .map(n => n.textContent)
+      .join('')
+      .trim();
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(() => flashCopied(btn));
     } else {
