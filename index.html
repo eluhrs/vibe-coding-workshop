@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding Workshop — Lehigh University</title>
+<style>
+  /* ── Brand tokens ── */
+  :root {
+    --cream:       #f5f0e8;
+    --maroon:      #6b2d2d;
+    --maroon-light:#8c3d3d;
+    --maroon-pale: #f0e8e8;
+    --gray-dark:   #2e2e2e;
+    --gray-mid:    #555;
+    --gray-light:  #888;
+    --border:      #d4c9b8;
+    --code-bg:     #eee8dc;
+    --stripe-h:    6px;
+    --footer-h:    52px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--cream);
+    color: var(--gray-dark);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Slide wrapper ── */
+  #deck {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    padding: 36px 52px 24px;
+    overflow-y: auto;
+  }
+  .slide.active { display: flex; }
+
+  /* ── Top accent stripe ── */
+  .slide::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--stripe-h);
+    background: var(--maroon);
+    z-index: 10;
+  }
+
+  /* ── Slide title ── */
+  .slide-title {
+    font-size: 1.75rem;
+    font-weight: normal;
+    color: var(--maroon);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    margin-top: calc(var(--stripe-h) + 4px);
+    letter-spacing: 0.01em;
+  }
+
+  .slide-subtitle {
+    font-size: 1rem;
+    color: var(--gray-mid);
+    font-style: italic;
+    margin-top: -14px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Speaker note ── */
+  .speaker-note {
+    font-size: 0.92rem;
+    color: var(--maroon-light);
+    font-style: italic;
+    margin-bottom: 18px;
+    line-height: 1.55;
+    border-left: 3px solid var(--maroon-light);
+    padding-left: 12px;
+  }
+
+  /* ── Body text ── */
+  .slide p {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--gray-mid);
+    margin-bottom: 14px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  /* ── Bullet lists — callout style ── */
+  .slide ul, .slide ol {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.93rem;
+    color: var(--gray-dark);
+    line-height: 1.7;
+    list-style: none;
+    margin: 0 0 16px 0;
+    padding: 14px 18px 14px 18px;
+    background: #faf8f4;
+    border-left: 4px solid #b0a090;
+    margin-bottom: 6px;
+    padding-left: 14px;
+    position: relative;
+  }
+  .slide ul li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: #b0a090;
+    font-weight: 600;
+  }
+  .slide ol { counter-reset: ol-counter; }
+  .slide ol li::before {
+    content: counter(ol-counter) '.';
+    counter-increment: ol-counter;
+    position: absolute;
+    left: 0;
+    color: #b0a090;
+    font-weight: 600;
+  }
+
+  /* ── Spec list (slide 6 reference box) ── */
+  .spec-list {
+    background: #faf8f4;
+    border-left: 4px solid #b0a090;
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.88rem;
+    color: var(--gray-dark);
+    line-height: 1.7;
+  }
+  .spec-list strong {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7a6a5a;
+    margin-bottom: 6px;
+  }
+  /* spec-list nested ul overrides — no double background */
+  .spec-list ul {
+    background: none;
+    border-left: none;
+    border-radius: 0;
+    padding: 4px 0 0 0;
+    margin: 0;
+  }
+  .spec-list ul li {
+    padding-left: 14px;
+  }
+  .spec-list ul li::before {
+    content: '–';
+    color: #b0a090;
+  }
+  .section-label {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: white;
+    background: var(--maroon);
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Prompt copy block ── */
+  .prompt-block {
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .prompt-label {
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6a9955;
+    margin-bottom: 8px;
+  }
+  .prompt-text {
+    font-family: 'Courier New', monospace;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: #d4d4d4;
+    white-space: pre-wrap;
+  }
+  .prompt-text .placeholder {
+    background: var(--maroon);
+    color: #ffe320;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    background: #1a1a1a;
+    color: #9cdcfe;
+    border: 1px solid #9cdcfe;
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: #1e3a4a; }
+  .copy-btn.copied { background: #4a7c4a; color: #fff; border-color: #4a7c4a; }
+
+  /* ── Screenshot placeholder ── */
+  .screenshot-placeholder {
+    border: 2px dashed var(--maroon-light);
+    border-radius: 6px;
+    background: var(--maroon-pale);
+    padding: 24px;
+    text-align: center;
+    color: var(--maroon);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+  .screenshot-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Constrained screenshot (centered, max 800px wide, natural height) ── */
+  .screenshot-bleed {
+    margin: 0 auto 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 100%;
+    max-width: 800px;
+    background: #111;
+    display: block;
+  }
+  .screenshot-bleed img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 5px;
+  }
+
+  /* ── Rules file block ── */
+  .rules-block {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .rules-block .comment { color: #6a9955; display: block; }
+  .rules-block .heading { color: #9cdcfe; display: block; margin-top: 10px; }
+  .rules-block .value   { color: #ce9178; display: block; padding-left: 12px; }
+
+  /* ── Theme chips ── */
+  .theme-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .chip {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.82rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 14px;
+    color: var(--gray-dark);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .chip:hover { background: var(--maroon-pale); border-color: var(--maroon-light); }
+  .chip.active {
+    background: #1a1a1a;
+    border-color: #9cdcfe;
+    color: #9cdcfe;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* ── Two-col layout ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Live mode — hide screenshots ── */
+  body.live .screenshot-bleed { display: none; }
+  body.live .screenshot-caption { display: none; }
+
+  /* ── Mode toggle ── */
+  #mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.72rem;
+    color: var(--gray-light);
+    white-space: nowrap;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  #mode-toggle label {
+    cursor: pointer;
+    user-select: none;
+  }
+  #mode-toggle .toggle-track {
+    position: relative;
+    width: 32px;
+    height: 17px;
+    background: var(--border);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  #mode-toggle .toggle-track.on { background: var(--maroon-light); }
+  #mode-toggle .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 13px;
+    height: 13px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  #mode-toggle .toggle-track.on .toggle-thumb { left: 17px; }
+
+  /* ── Narrow footer — arrows only, tighter padding ── */
+  @media (max-width: 520px) {
+    #footer { padding: 0 6px; gap: 4px; }
+    #logo-wordmark { max-width: 90px; }
+    .nav-btn .btn-text { display: none; }
+    #mode-toggle .toggle-label { display: none; }
+  }
+
+  /* ── Divider ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 18px 0;
+  }
+
+  /* ── Footer ── */
+  #footer {
+    height: auto;
+    min-height: 52px;
+    border-top: 1px solid var(--maroon);
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 0 16px;
+    background: var(--cream);
+    flex-shrink: 0;
+    gap: 8px;
+    position: relative;
+  }
+
+  #logo-area {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+  #logo-wordmark {
+    height: 26px;
+    width: auto;
+    display: block;
+    max-width: 160px;
+  }
+
+  #nav-area {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .nav-btn {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: white;
+    color: var(--maroon);
+    border: 1px solid var(--maroon);
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .nav-btn:hover { background: var(--maroon); color: white; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn:disabled:hover { background: white; color: var(--maroon); }
+
+  #slide-counter {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.78rem;
+    color: var(--gray-light);
+    min-width: 36px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* ── View mode toggle ── */
+  #view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.72rem;
+    color: var(--gray-mid);
+    white-space: nowrap;
+  }
+  #view-toggle .toggle-label {
+    font-weight: 600;
+  }
+  #view-toggle .toggle-label.active {
+    color: var(--maroon);
+  }
+  /* Toggle switch track */
+  #toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  #toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  #toggle-switch .track {
+    position: absolute;
+    inset: 0;
+    background: var(--maroon);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #toggle-switch input:checked + .track {
+    background: #888;
+  }
+  #toggle-switch .track::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+  #toggle-switch input:checked + .track::after {
+    transform: translateX(16px);
+  }
+
+  /* ── Hide screenshots in live mode ── */
+  body.live-mode .screenshot-bleed {
+    display: none;
+  }
+
+  /* ── Title slide ── */
+  .title-slide {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+  }
+  .title-slide .big-title {
+    font-size: 2.8rem;
+    font-weight: normal;
+    color: var(--maroon);
+    line-height: 1.2;
+    margin-bottom: 6px;
+    margin-top: 25px;
+    letter-spacing: -0.01em;
+  }
+  .title-slide .title-rule {
+    width: 80px;
+    height: 3px;
+    background: var(--maroon);
+    margin: 16px auto 24px;
+    border-radius: 2px;
+  }
+  .title-slide .pull-quote {
+    position: relative;
+    font-size: 1.2rem;
+    color: var(--maroon-light);
+    font-style: italic;
+    max-width: 640px;
+    line-height: 1.7;
+    margin-bottom: 10px;
+    padding: 8px 48px;
+    text-align: center;
+  }
+  .title-slide .pull-quote::before {
+    content: '\201C';
+    position: absolute;
+    top: -10px;
+    left: 4px;
+    font-size: 4rem;
+    color: var(--maroon);
+    opacity: 0.35;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+  .title-slide .pull-quote::after {
+    content: '\201D';
+    position: absolute;
+    bottom: -28px;
+    right: 4px;
+    font-size: 4rem;
+    color: var(--maroon);
+    opacity: 0.35;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+  .title-slide .description {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.9rem;
+    color: var(--gray-mid);
+    line-height: 1.75;
+    max-width: 620px;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+  .title-slide .meta-footnote {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.9rem;
+    color: var(--gray-dark);
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .title-slide .meta-details {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.2rem;
+    color: var(--gray-dark);
+    line-height: 1.5;
+    text-align: center;
+  }
+  .title-slide .footnote {
+    position: absolute;
+    bottom: 10px;
+    left: 52px;
+    right: 52px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 0.72rem;
+    color: var(--gray-light);
+    font-style: italic;
+    text-align: left;
+  }
+</style>
+</head>
+<body class="live">
+
+<div id="deck">
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 1 — Title
+  ════════════════════════════════════════════════ -->
+  <div class="slide title-slide active" id="slide-1">
+    <div class="big-title">Vibe Coding<br>with [Google Antigravity]<span style="font-size:1.2rem;vertical-align:super;">*</span></div>
+    <div class="title-rule"></div>
+    <div class="pull-quote">Do you have ideas for developing software tools but lack the programming knowledge to bring your ideas to life? If you are comfortable using complex applications, capable of navigating your computer's directory structure, and able to articulate your design goals, then vibe coding may be for you! Using Antigravity, Google's new "agent-first IDE", participants will learn to design through specification rather than build with code. We will create a local web application, add some more advanced features, and launch the app locally — all without writing a single line of code.</div>
+    <div class="meta" style="margin-top:32px;">
+    <div class="meta-footnote">* These techniques will work with any agentic IDE, including Claude Code</div>
+      <div class="meta-details">Eric Luhrs<br>Digital Access Librarian<br>Library Special Collections<br><br>
+        <a href="https://drive.google.com/file/d/1xBxO0A1Y2CYm_SR24s9R-k0XKb-q14U-/view?usp=drive_link" target="_blank" style="font-size:0.85rem;color:var(--maroon-light);font-family:'Helvetica Neue',Arial,sans-serif;">drive.google.com — Slide Deck</a>
+      </div>
+    </div>
+    <div class="footnote"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 2 — Workshop Overview
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="section-label">Welcome</div>
+    <div class="slide-title">Workshop Overview</div>
+
+    <p>We're going to build a real, working application together.  We will create a <strong>personal note taking tool</strong> using an agentic AI coding tool. We'll do this through prompting alone, without writing any code ourselves.</p>
+
+    <svg viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:860px;margin:24px auto 0;display:block;">
+      <style>
+        .circle-bg { fill: #f9f8f4; stroke: #ada191; stroke-width: 4; }
+        .num-text { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 36px; font-weight: bold; fill: #66995e; text-anchor: middle; }
+        .label-text { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #66995e; text-anchor: middle; }
+        .arrow { stroke: #ada191; stroke-width: 4; fill: none; marker-end: url(#arrowhead); }
+      </style>
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#ada191" />
+        </marker>
+      </defs>
+      <circle cx="80" cy="70" r="45" class="circle-bg" />
+      <text x="80" y="82" class="num-text">1</text>
+      <text x="80" y="145" class="label-text">Core</text>
+      <text x="80" y="175" class="label-text">Concepts</text>
+      <line x1="125" y1="70" x2="235" y2="70" class="arrow" />
+      <circle cx="280" cy="70" r="45" class="circle-bg" />
+      <text x="280" y="82" class="num-text">2</text>
+      <text x="280" y="145" class="label-text">Single-Prompt</text>
+      <text x="280" y="175" class="label-text">App Design</text>
+      <line x1="325" y1="70" x2="435" y2="70" class="arrow" />
+      <circle cx="480" cy="70" r="45" class="circle-bg" />
+      <text x="480" y="82" class="num-text">3</text>
+      <text x="480" y="145" class="label-text">Feature</text>
+      <text x="480" y="175" class="label-text">Iteration</text>
+      <line x1="525" y1="70" x2="635" y2="70" class="arrow" />
+      <circle cx="680" cy="70" r="45" class="circle-bg" />
+      <text x="680" y="82" class="num-text">4</text>
+      <text x="680" y="145" class="label-text">Personal</text>
+      <text x="680" y="175" class="label-text">Customization</text>
+      <line x1="725" y1="70" x2="835" y2="70" class="arrow" />
+      <circle cx="880" cy="70" r="45" class="circle-bg" />
+      <text x="880" y="82" class="num-text">5</text>
+      <text x="880" y="145" class="label-text">Professional</text>
+      <text x="880" y="175" class="label-text">Workflows</text>
+    </svg>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 3 — The Mental Model Shift
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="section-label">Core Concepts 1/4</div>
+    <div class="slide-title">The Mental Model Shift</div>
+
+    <p>We won't be writing any code today. Instead, we will <strong>direct a very fast, very literal</strong> software engineer who happens to know every programming language ever written.</p>
+
+    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:620px;margin:16px auto 0;display:block;">
+      <style>
+        .pyramid-layer { fill: #f9f8f4; stroke: #ada191; stroke-width: 3; }
+        .label-text { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #66995e; text-anchor: middle; }
+        .arrow-line { stroke: #66995e; stroke-width: 5; fill: none; marker-end: url(#sharp-tip); }
+        .progression-text { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #66995e; text-anchor: middle; }
+      </style>
+      <defs>
+        <marker id="sharp-tip" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#66995e" />
+        </marker>
+      </defs>
+      <path d="M400 50 L310 170 L490 170 Z" class="pyramid-layer" />
+      <text x="400" y="145" class="label-text">Test</text>
+      <path d="M310 170 L220 300 L580 300 L490 170 Z" class="pyramid-layer" />
+      <text x="400" y="255" class="label-text">Articulate Clearly</text>
+      <path d="M220 300 L130 430 L670 430 L580 300 Z" class="pyramid-layer" />
+      <text x="400" y="385" class="label-text">Research, Plan, Specify</text>
+      <path d="M130 430 L40 560 L760 560 L670 430 Z" class="pyramid-layer" />
+      <text x="400" y="515" class="label-text">Think Like A Prodect Manager</text>
+      <line x1="43" y1="463" x2="301" y2="95" class="arrow-line" />
+      <text x="155" y="265" class="progression-text" transform="rotate(-54.8 155 265)">Progression</text>
+    </svg>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 4 — The Development Cycle
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="section-label">Core Concepts 2/4</div>
+    <div class="slide-title">The Development Cycle</div>
+    <p>Every feature you build today follows the same loop. When you get stuck, two branches help you get unstuck.</p>
+
+    <svg viewBox="0 0 640 820" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;margin:0 auto;">
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#b0a090"/>
+    </marker>
+    <marker id="arr-maroon" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#8c3d3d"/>
+    </marker>
+    <marker id="arr-gold" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#c0a060"/>
+    </marker>
+  </defs>
+
+  <!-- Plan -->
+  <rect x="150" y="20" width="300" height="70" rx="10" fill="#fdf8ee" stroke="#c0a060" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="300" y="48" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#7a6020">Plan</text>
+  <text x="300" y="70" text-anchor="middle" font-family="Arial" font-size="11" fill="#a08030">Define and break down goals before you start</text>
+
+  <line x1="300" y1="90" x2="300" y2="148" stroke="#c0a060" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-gold)"/>
+
+  <!-- When Needed -->
+  <text x="340" y="120" text-anchor="middle" font-family="Arial" font-size="10" font-weight="700" fill="#a08030">When</text>
+  <text x="340" y="132" text-anchor="middle" font-family="Arial" font-size="10" font-weight="700" fill="#a08030">Needed</text>
+
+  <!-- Specify -->
+  <rect x="185" y="152" width="230" height="64" rx="10" fill="#faf8f4" stroke="#b0a090" stroke-width="2.5"/>
+  <circle cx="232" cy="184" r="13" fill="#5a9c5a"/>
+  <text x="232" y="189" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="white">1</text>
+  <text x="318" y="176" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#2e2e2e">Prompt</text>
+  <text x="318" y="198" text-anchor="middle" font-family="Arial" font-size="11" fill="#888">Write precise prompt</text>
+
+  <!-- Generate -->
+  <rect x="348" y="350" width="230" height="64" rx="10" fill="#faf8f4" stroke="#b0a090" stroke-width="2.5"/>
+  <circle cx="395" cy="382" r="13" fill="#5a9c5a"/>
+  <text x="395" y="387" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="white">2</text>
+  <text x="478" y="374" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#2e2e2e">Generate</text>
+  <text x="478" y="394" text-anchor="middle" font-family="Arial" font-size="11" fill="#888">AI writes code</text>
+
+  <!-- Test -->
+  <rect x="22" y="350" width="230" height="64" rx="10" fill="#faf8f4" stroke="#b0a090" stroke-width="2.5"/>
+  <circle cx="51" cy="382" r="13" fill="#5a9c5a"/>
+  <text x="51" y="387" text-anchor="middle" font-family="Arial" font-size="13" font-weight="700" fill="white">3</text>
+  <text x="152" y="374" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#2e2e2e">Test</text>
+  <text x="152" y="394" text-anchor="middle" font-family="Arial" font-size="11" fill="#888">Analyze code, inspect output</text>
+
+  <!-- Cycle arrows -->
+  <path d="M398,196 C445,240 462,300 456,348" fill="none" stroke="#b0a090" stroke-width="2.5" marker-end="url(#arr)"/>
+  <path d="M346,382 L254,382" fill="none" stroke="#b0a090" stroke-width="2.5" marker-end="url(#arr)"/>
+  <path d="M144,348 C118,300 140,240 200,196" fill="none" stroke="#b0a090" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- Next Feature -->
+  <text x="95" y="270" text-anchor="middle" font-family="Arial" font-size="12" font-weight="700" fill="#5a8f5a">Next</text>
+  <text x="95" y="286" text-anchor="middle" font-family="Arial" font-size="12" font-weight="700" fill="#5a8f5a">Feature</text>
+
+  <!-- Error path -->
+  <line x1="137" y1="414" x2="137" y2="476" stroke="#8c3d3d" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-maroon)"/>
+  <text x="98" y="438" text-anchor="middle" font-family="Arial" font-size="12" font-weight="600" fill="#8c3d3d">Problem</text>
+  <text x="98" y="454" text-anchor="middle" font-family="Arial" font-size="12" font-weight="600" fill="#8c3d3d">Detected</text>
+
+  <!-- Diagnose -->
+  <rect x="20" y="476" width="320" height="70" rx="10" fill="#f8f0f0" stroke="#8c3d3d" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="180" y="504" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#6b2d2d">Diagnose</text>
+  <text x="180" y="526" text-anchor="middle" font-family="Arial" font-size="11" fill="#8c3d3d">Error with prompt or code?</text>
+
+  <!-- Retry loop -->
+  <path d="M340,511 C710,511 710,120 450,55" fill="none" stroke="#8c3d3d" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-maroon)"/>
+  <text x="598" y="270" text-anchor="middle" font-family="Arial" font-size="12" font-weight="600" fill="#8c3d3d">Try</text>
+  <text x="598" y="286" text-anchor="middle" font-family="Arial" font-size="12" font-weight="600" fill="#8c3d3d">Again</text>
+</svg>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 5 — Vibe Coding Challenges
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="section-label">Core Concepts 3/4</div>
+    <div class="slide-title">Vibe Coding Challenges</div>
+
+    <p>Vibe coding introduces specific frictions: <strong>ambiguity, context drift, and nondeterminism</strong>, that can disrupt your project. The right response to all of these challenges is to stay calm, diagnose what the prompt got wrong, and iterate.</p>
+
+    <svg viewBox="0 0 1300 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:860px;margin:20px auto 0;display:block;">
+      <style>
+        .pp-signal-path { stroke: #66995e; stroke-width: 6; fill: none; stroke-linecap: round; }
+        .pp-label-text { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #66995e; text-anchor: middle; }
+        .pp-label-sub { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-style: italic; fill: #ada191; text-anchor: middle; }
+        .pp-obstacle { fill: #f9f8f4; stroke: #ada191; stroke-width: 3; }
+        .pp-dotted { stroke: #853e46; stroke-width: 3; stroke-dasharray: 8, 8; }
+        .pp-noise { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #853e46; text-anchor: middle; }
+      </style>
+      <circle cx="120" cy="200" r="90" class="pp-obstacle" />
+      <text x="120" y="195" class="pp-label-text">INTENT</text>
+      <text x="120" y="220" class="pp-label-sub">(signal)</text>
+      <line x1="210" y1="200" x2="310" y2="200" class="pp-signal-path" />
+      <rect x="310" y="130" width="210" height="140" rx="10" ry="10" class="pp-obstacle" />
+      <text x="415" y="205" class="pp-label-text">AMBIGUITY</text>
+      <line x1="535" y1="100" x2="535" y2="300" class="pp-dotted" />
+      <line x1="535" y1="300" x2="650" y2="500" class="pp-dotted" />
+      <path d="M520 200 C535 190, 545 210, 560 200" class="pp-signal-path" />
+      <rect x="560" y="130" width="210" height="140" rx="10" ry="10" class="pp-obstacle" />
+      <text x="665" y="205" class="pp-label-text">CONTEXT DRIFT</text>
+      <line x1="785" y1="100" x2="785" y2="300" class="pp-dotted" />
+      <line x1="785" y1="300" x2="650" y2="500" class="pp-dotted" />
+      <path d="M770 200 C785 190, 795 210, 810 200" class="pp-signal-path" />
+      <rect x="810" y="130" width="210" height="140" rx="10" ry="10" class="pp-obstacle" />
+      <text x="915" y="205" class="pp-label-text">NONDETERMINISM</text>
+      <line x1="1035" y1="100" x2="1035" y2="300" class="pp-dotted" />
+      <line x1="1035" y1="300" x2="650" y2="500" class="pp-dotted" />
+      <line x1="1020" y1="200" x2="1180" y2="200" class="pp-signal-path" />
+      <circle cx="1180" cy="200" r="45" class="pp-obstacle" />
+      <text x="1180" y="205" class="pp-label-text">RESULT</text>
+      <text x="650" y="540" class="pp-noise">NOISE</text>
+    </svg>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 5 — Getting Started With  Antigravity
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-6">
+    <div class="section-label">Core Concepts 4/4</div>
+    <div class="slide-title">Getting Started With Antigravity</div>
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 180" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.kb-base{fill:#f9f8f4;stroke:#ada191;stroke-width:4}.kb-key{fill:#f9f8f4;stroke:#ada191;stroke-width:2}.kb-active{fill:#66995e;stroke:#66995e}.instruct-text{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:.5px}</style>
+        <rect x="20" y="15" width="160" height="70" rx="8" class="kb-base"/>
+        <rect x="35" y="30" width="20" height="15" rx="3" class="kb-key"/>
+        <rect x="60" y="30" width="20" height="15" rx="3" class="kb-active"/>
+        <rect x="85" y="30" width="20" height="15" rx="3" class="kb-key"/>
+        <rect x="110" y="30" width="20" height="15" rx="3" class="kb-key"/>
+        <rect x="135" y="30" width="30" height="15" rx="3" class="kb-key"/>
+        <rect x="35" y="55" width="30" height="15" rx="3" class="kb-key"/>
+        <rect x="70" y="55" width="60" height="15" rx="3" class="kb-active"/>
+        <rect x="135" y="55" width="30" height="15" rx="3" class="kb-key"/>
+        <text x="100" y="135" class="instruct-text">PERFORM THESE STEPS</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>SETUP OUR WORKSPACE TOGETHER</strong>
+        <ul style="margin:0;padding-left:16px;line-height:1.8;">
+          <li>Open Google Antigravity</li>
+          <li>Complete onboarding process</li>
+          <li>Login with LehighID (or personal gmail account)</li>
+          <li>Create new workspace called "Workshop"</li>
+          <li><a href="https://drive.google.com/file/d/1vJaaRq8jzmSyr2zh-IPYjw3DCV63Q-Zz/view?usp=drive_link" target="_blank" style="color:var(--maroon);">Screen recording of these steps</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 180" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.eye-lid{fill:none;stroke:#ada191;stroke-width:6;stroke-linecap:round}.iris{fill:#66995e}.pupil{fill:#f9f8f4}.watch-text{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:.5px}</style>
+        <path d="M30 50 C60 0, 140 0, 170 50 C140 100, 60 100, 30 50 Z" class="eye-lid"/>
+        <circle cx="100" cy="50" r="30" class="iris"/>
+        <circle cx="110" cy="40" r="8" class="pupil"/>
+        <text x="100" y="135" class="watch-text">WATCH THESE STEPS</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>WATCH ME DEMONSTRATE THE DEV CYCLE</strong>
+        <ul style="margin:0;padding-left:16px;line-height:1.8;">
+          <li>I prompt the model</li>
+          <li>The model generates code</li>
+          <li>I review, test, accept model output</li>
+          <li>Repeat these steps until complete</li>
+          <li><a href="https://drive.google.com/file/d/1mCd-XXvvC7ZJwbS8CjyhzVeBC3_Z4i5q/view?usp=drive_link" target="_blank" style="color:var(--maroon);">Screen recording of these steps</a></li>
+        </ul>
+      </div>
+    </div>
+ </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 7 — Submit Our First Prompt
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-7">
+    <div class="section-label">Single-Prompt App Design 1/2</div>
+    <div class="slide-title">Submit Our First Prompt</div>
+
+    <div class="screenshot-bleed" style="max-width:100%;">
+      <img src="https://lh3.googleusercontent.com/d/1jAgXLA8xfD_8bpm-bBvFnDVfhrVNSwME" alt="Example app output — garish, unstyled">
+    </div>
+    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Example output from our first prompt — unstyled and basic, but it works.</p>
+    <hr class="screenshot-caption divider">
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.checklist-base{fill:#f9f8f4;stroke:#ada191;stroke-width:4}.checklist-clip{fill:#ada191}.check-mark-scaled{fill:none;stroke:#66995e;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.faux-text-scaled{fill:none;stroke:#ada191;stroke-width:2.5;stroke-linecap:round}.req-text{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:1px}</style>
+        <rect x="45" y="10" width="110" height="120" rx="5" class="checklist-base"/>
+        <rect x="80" y="5" width="40" height="15" rx="2" class="checklist-clip"/>
+        <path d="M58 40 L64 46 L75 34" class="check-mark-scaled"/>
+        <line x1="85" y1="40" x2="135" y2="40" class="faux-text-scaled"/>
+        <line x1="85" y1="48" x2="115" y2="48" class="faux-text-scaled" stroke-width="2"/>
+        <path d="M58 75 L64 81 L75 69" class="check-mark-scaled"/>
+        <line x1="85" y1="75" x2="135" y2="75" class="faux-text-scaled"/>
+        <line x1="85" y1="83" x2="120" y2="83" class="faux-text-scaled" stroke-width="2"/>
+        <path d="M58 110 L64 116 L75 104" class="check-mark-scaled"/>
+        <line x1="85" y1="110" x2="130" y2="110" class="faux-text-scaled"/>
+        <line x1="85" y1="118" x2="110" y2="118" class="faux-text-scaled" stroke-width="2"/>
+        <text x="100" y="170" class="req-text">REQUIREMENTS</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>What this prompt specifies</strong>
+        <ul style="margin:0;padding-left:16px;line-height:1.8;">
+          <li>Single file HTML/CSS/JS</li>
+          <li>Clean minimal styling</li>
+          <li>Basic app functionality</li>
+          <li>Standard note fields</li>
+          <li>Use localStorage</li>
+          <li>Create sample note data</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-left:146px;">
+
+      <div class="theme-chips">
+        <div style="width:100%;text-align:center;font-family:'Helvetica Neue',Arial,sans-serif;font-size:0.85rem;color:var(--gray-mid);margin-bottom:8px;">Select a theme, click the "Copy" button, then paste into Antigravity:</div>
+        <div style="width:100%;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+          <span class="chip" onclick="selectTheme(this, 'research')">research</span>
+          <span class="chip" onclick="selectTheme(this, 'recipes')">recipes</span>
+          <span class="chip" onclick="selectTheme(this, 'fitness')">fitness</span>
+          <span class="chip" onclick="selectTheme(this, 'travel')">travel</span>
+          <span class="chip" onclick="selectTheme(this, 'movies')">movies</span>
+          <span class="chip" onclick="selectTheme(this, 'generic')">generic</span>
+        </div>
+      </div>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Prompt — select a theme above, then copy</div>
+        <div class="prompt-text" id="prompt-initial">Create a personal knowledge base app in a single HTML file using vanilla HTML, CSS, and JavaScript. Use clean, minimal styling: white background, neutral gray accents, readable sans-serif font, no decorative elements. Include a form to add new notes and a list to display them. Each note should have a title, body, date (auto-populated when the note is created), and category. Save notes to localStorage so they persist between sessions. Do not include search or filtering functionality. Populate the app with 12 sample notes related to <span class="placeholder" id="theme-placeholder">[THEME]</span>.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-initial', this)">Copy</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 8 — Review Output From Our First Prompt
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="section-label">Single-Prompt App Design 1/2</div>
+    <div class="slide-title">Review Output From Our First Prompt</div>
+
+    <div class="screenshot-bleed" style="max-width:100%;">
+      <img src="https://lh3.googleusercontent.com/d/1t-NSEAtAvvHO1egy197OXQ_cBPy_QjVF" alt="Example app output — clean, modern">
+    </div>
+    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Example output from our first prompt — your results may look different from mine.</p>
+    <hr class="screenshot-caption divider">
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-25 -15 250 210" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.screen-frame{fill:#f9f8f4;stroke:#ada191;stroke-width:3}.magnifying-glass-green{fill:none;stroke:#66995e;stroke-width:5;stroke-linecap:round}.compare-text{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:.5px}</style>
+        <rect x="25" y="10" width="130" height="90" rx="6" class="screen-frame"/>
+        <rect x="50" y="25" width="130" height="90" rx="6" class="screen-frame" stroke-opacity="0.6"/>
+        <circle cx="115" cy="55" r="35" class="magnifying-glass-green"/>
+        <line x1="140" y1="80" x2="185" y2="125" class="magnifying-glass-green" stroke-width="6"/>
+        <text x="100" y="170" class="compare-text">COMPARE OUR RESULTS</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>How does your app look?</strong>
+        <ul style="margin:0;padding-left:16px;line-height:1.8;">
+          <li>Are your results identical to mine?</li>
+          <li>Any differences in layout and styling?</li>
+          <li>Welcome to nondeterministic coding!</li>
+          <li>Becomes problematic as codebase grows.</li>
+          <li>Version control (GitHub) can help.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 8 — Adding Search
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-9">
+    <div class="section-label">Feature Iteration 1/3</div>
+    <div class="slide-title">New feature: make our notes searchable</div>
+
+    <div class="screenshot-bleed" style="max-width:100%;">
+      <img src="https://lh3.googleusercontent.com/d/1P_RqZczxjipuJCOkpgyALD7BW3mfHLnN" alt="Full-width search bar added to notes app">
+    </div>
+    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">A full-width search bar filtering notes in real time as you type.</p>
+    <hr class="screenshot-caption divider">
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.bs-frame{fill:#f9f8f4;stroke:#ada191;stroke-width:2.5}.bs-internal{fill:none;stroke:#ada191;stroke-width:1.2}.bs-dotted{fill:none;stroke:#ada191;stroke-width:1.2;stroke-dasharray:4,3}.bs-path{fill:none;stroke:#66995e;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}.bs-node{fill:#f9f8f4;stroke:#66995e;stroke-width:2}.bs-vague{font-family:'Helvetica Neue',Arial,sans-serif;font-size:40px;font-weight:bold;fill:#ada191;text-anchor:middle}.bs-vs{font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;font-style:italic;fill:#333;text-anchor:middle}.bs-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:1px}</style>
+        <rect x="15" y="25" width="70" height="90" rx="5" class="bs-frame"/>
+        <circle cx="50" cy="70" r="28" class="bs-dotted"/>
+        <text x="50" y="84" class="bs-vague">?</text>
+        <text x="100" y="75" class="bs-vs">vs.</text>
+        <rect x="115" y="25" width="70" height="90" rx="5" class="bs-frame"/>
+        <rect x="126" y="35" width="48" height="70" rx="2" class="bs-internal"/>
+        <path d="M136 90 L143 70 L153 80 L158 55" class="bs-path"/>
+        <circle cx="136" cy="90" r="3" class="bs-node"/>
+        <circle cx="143" cy="70" r="3" class="bs-node"/>
+        <circle cx="153" cy="80" r="3" class="bs-node"/>
+        <path d="M153 50 L163 60 M163 50 L153 60" stroke="#66995e" stroke-width="3" stroke-linecap="round"/>
+        <text x="100" y="170" class="bs-label">BE SPECIFIC</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>Detailed and specific beats short and vague</strong>
+        <ul>
+          <li>Feature: search bar</li>
+          <li>How it looks: full-width over both columns</li>
+          <li>How it behaves: live filtering</li>
+          <li>Functionality: match against title, body</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-left:146px;">
+
+      <div class="prompt-block" style="background:#4a4a4a;border-color:#666;">
+        <div class="prompt-label">Vague prompt — do not use</div>
+        <div class="prompt-text">Add search functionality.</div>
+      </div>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Specific prompt — copy and use this one</div>
+        <div class="prompt-text" id="prompt-search">Add a full-width search bar spanning the top of the app that filters displayed notes in real time as the user types, matching against both the title and body of each note.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-search', this)">Copy</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 9 — Tagging: Intro & Sub-prompt 1
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-10">
+    <div class="section-label">Feature Iteration 2/3</div>
+    <div class="slide-title">New feature: filter our notes by category</div>
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.ss-frame{fill:#f9f8f4;stroke:#ada191;stroke-width:3;stroke-linejoin:round}.ss-num{font-family:'Helvetica Neue',Arial,sans-serif;font-size:22px;font-weight:800;fill:#66995e;text-anchor:middle}.ss-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:1px}</style>
+        <rect x="35" y="90" width="40" height="40" rx="3" class="ss-frame"/>
+        <text x="55" y="118" class="ss-num">1</text>
+        <rect x="80" y="90" width="40" height="40" rx="3" class="ss-frame"/>
+        <text x="100" y="118" class="ss-num">2</text>
+        <rect x="125" y="90" width="40" height="40" rx="3" class="ss-frame"/>
+        <text x="145" y="118" class="ss-num">3</text>
+        <rect x="57.5" y="50" width="40" height="40" rx="3" class="ss-frame"/>
+        <text x="77.5" y="78" class="ss-num">4</text>
+        <rect x="102.5" y="50" width="40" height="40" rx="3" class="ss-frame"/>
+        <text x="122.5" y="78" class="ss-num">5</text>
+        <rect x="80" y="10" width="40" height="40" rx="3" class="ss-frame"/>
+        <text x="100" y="38" class="ss-num">6</text>
+        <text x="100" y="170" class="ss-label">SMALL STEPS</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>One prompt per concern, small steps that build on each other</strong>
+        <ul>
+          <li>Feature: filter buttons</li>
+          <li>How it looks: row of buttons above notes list</li>
+          <li>How it behaves: buttons based on categories</li>
+          <li>Functionality: filters by selected category</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-left:146px;">
+      <div class="prompt-block">
+        <div class="prompt-label">Sub-prompt 1 — Filter buttons</div>
+        <div class="prompt-text" id="prompt-tag1">Add a row of filter buttons above the notes list, one for each unique category in the notes. Clicking a button shows only notes with that category. Include an "All" button that shows every note.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-tag1', this)">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 10 — Tagging: Sub-prompts 2 & 3
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-11">
+    <div class="section-label">Feature Iteration 3/3</div>
+    <div class="slide-title">New feature: unified search &amp; filter bar</div>
+
+    <div class="screenshot-bleed" style="max-width:100%;">
+      <img src="https://lh3.googleusercontent.com/d/1cyE2mezs4MFO-vLKT_-zhjvIt_c1BJwL" alt="Unified search and filter toolbar">
+    </div>
+    <p class="screenshot-caption" style="text-align:center;font-style:italic;font-size:0.8rem;color:var(--gray-light);margin-top:-10px;margin-bottom:14px;">Screenshot showing the unified search and filter toolbar — search input on the left, category filter on the right.</p>
+    <hr class="screenshot-caption divider">
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.tt-frame{fill:#f9f8f4;stroke:#ada191;stroke-width:3}.tt-doc-x{fill:none;stroke:#ada191;stroke-width:1.2;stroke-opacity:0.6;stroke-linecap:round}.tt-rim{fill:#f9f8f4;stroke:#66995e;stroke-width:3}.tt-handle{fill:none;stroke:#66995e;stroke-width:5;stroke-linecap:round}.tt-x-grey{fill:none;stroke:#ada191;stroke-width:2.5;stroke-linecap:round}.tt-x-red{fill:none;stroke:#853e46;stroke-width:4.5;stroke-linecap:round}.tt-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:1px}</style>
+        <rect x="40" y="15" width="120" height="120" rx="6" class="tt-frame"/>
+        <g transform="translate(56,30)">
+          <g transform="translate(0,0)"><path d="M0 0 L6 6 M6 0 L0 6" class="tt-doc-x"/><path d="M22 0 L28 6 M28 0 L22 6" class="tt-doc-x"/><path d="M44 0 L50 6 M50 0 L44 6" class="tt-doc-x"/><path d="M66 0 L72 6 M72 0 L66 6" class="tt-doc-x"/><path d="M88 0 L94 6 M94 0 L88 6" class="tt-doc-x"/></g>
+          <g transform="translate(0,22)"><path d="M0 0 L6 6 M6 0 L0 6" class="tt-doc-x"/><path d="M22 0 L28 6 M28 0 L22 6" class="tt-doc-x"/><path d="M44 0 L50 6 M50 0 L44 6" class="tt-doc-x"/><path d="M66 0 L72 6 M72 0 L66 6" class="tt-doc-x"/><path d="M88 0 L94 6 M94 0 L88 6" class="tt-doc-x"/></g>
+          <g transform="translate(0,44)"><path d="M0 0 L6 6 M6 0 L0 6" class="tt-doc-x"/><path d="M22 0 L28 6 M28 0 L22 6" class="tt-doc-x"/><path d="M44 0 L50 6 M50 0 L44 6" class="tt-doc-x"/><path d="M66 0 L72 6 M72 0 L66 6" class="tt-doc-x"/><path d="M88 0 L94 6 M94 0 L88 6" class="tt-doc-x"/></g>
+          <g transform="translate(0,66)"><path d="M0 0 L6 6 M6 0 L0 6" class="tt-doc-x"/><path d="M22 0 L28 6 M28 0 L22 6" class="tt-doc-x"/><path d="M44 0 L50 6 M50 0 L44 6" class="tt-doc-x"/><path d="M66 0 L72 6 M72 0 L66 6" class="tt-doc-x"/><path d="M88 0 L94 6 M94 0 L88 6" class="tt-doc-x"/></g>
+          <g transform="translate(0,88)"><path d="M0 0 L6 6 M6 0 L0 6" class="tt-doc-x"/><path d="M22 0 L28 6 M28 0 L22 6" class="tt-doc-x"/><path d="M44 0 L50 6 M50 0 L44 6" class="tt-doc-x"/><path d="M66 0 L72 6 M72 0 L66 6" class="tt-doc-x"/><path d="M88 0 L94 6 M94 0 L88 6" class="tt-doc-x"/></g>
+        </g>
+        <g transform="translate(-10,0)">
+          <line x1="68" y1="102" x2="25" y2="145" class="tt-handle"/>
+          <circle cx="95" cy="75" r="42" class="tt-rim"/>
+          <g transform="translate(75,55)">
+            <path d="M-5 -5 L7 7 M7 -5 L-5 7" class="tt-x-grey"/>
+            <path d="M33 -5 L45 7 M45 -5 L33 7" class="tt-x-grey"/>
+            <path d="M-5 33 L7 45 M7 33 L-5 45" class="tt-x-grey"/>
+            <path d="M33 33 L45 45 M45 33 L33 45" class="tt-x-grey"/>
+            <path d="M13 13 L27 27 M27 13 L13 27" class="tt-x-red"/>
+          </g>
+        </g>
+        <text x="100" y="170" class="tt-label">TEST, TEST, TEST</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>Always test model outputs thoroughly</strong>
+        <ul>
+          <li>Feature: integrated search and filter</li>
+          <li>How it looks: compact, unified toolbar</li>
+          <li>How it behaves: collapsed filter button dropdown inside search bar</li>
+          <li>Functionality: combined live-filtering logic</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-left:146px;">
+
+      <div class="prompt-block">
+        <div class="prompt-label">Sub-prompt 2 — Unified search toolbar</div>
+        <div class="prompt-text" id="prompt-tag2">Redesign the search area as a single unified toolbar: a full-width container with the search input on the left taking up most of the width, and a 'Filter by category' button on the right inside the same container, separated by a vertical divider. Clicking the button opens a dropdown list of all available categories plus an 'All' option at the top. Selecting a category filters the notes list and updates the button label to show the selected category. The button label can be removed by clicking an "x".</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-tag2', this)">Copy</button>
+      </div>
+
+      <div class="spec-list">
+        <strong>Did you test like an actual user?</strong>
+        <ul>
+          <li>Create a new note with a new category.</li>
+          <li>Does the new category get added to the filter dropdown?</li>
+          <li>If not, fix it with the following prompt.</li>
+        </ul>
+      </div>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Sub-prompt 3 — Dynamic categories</div>
+        <div class="prompt-text" id="prompt-tag3">When a new note is added, update the filter buttons to include any new category, and make sure the new note appears correctly when its category filter is selected.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-tag3', this)">Copy</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 11 — Freeform Build
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-12">
+    <div class="section-label">Personal Customization</div>
+    <div class="slide-title">Now it's your turn</div>
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.eb-bulb{fill:#f9f6e6;stroke:#ada191;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.eb-post{fill:none;stroke:#ada191;stroke-width:3}.eb-base-fill{fill:#e6e4dc;stroke:none}.eb-thread{fill:none;stroke:#333;stroke-width:2.2;stroke-linecap:round}.eb-filament{fill:none;stroke:#F2BB66;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.eb-spark{fill:#F0A050;stroke:none}.eb-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:.5px}</style>
+        <path d="M70 40 A30 30 0 1 1 130 40 Q130 65, 115 80 L115 100 Q100 110, 85 100 L85 80 Q70 65, 70 40 Z" class="eb-bulb"/>
+        <g transform="translate(85,100)">
+          <rect x="0" y="0" width="30" height="22" rx="3" class="eb-base-fill"/>
+          <rect x="0" y="0" width="30" height="22" rx="3" fill="none" stroke="#ada191" stroke-width="3.5"/>
+          <line x1="0" y1="5.5" x2="30" y2="5.5" class="eb-thread"/>
+          <line x1="0" y1="11" x2="30" y2="11" class="eb-thread"/>
+          <line x1="0" y1="16.5" x2="30" y2="16.5" class="eb-thread"/>
+        </g>
+        <rect x="91" y="72" width="18" height="28" rx="2" class="eb-post"/>
+        <path d="M90 70 C85 60, 95 60, 95 70 C95 80, 105 80, 105 70 C105 60, 115 60, 110 70" class="eb-filament"/>
+        <circle cx="100" cy="70" r="5" class="eb-spark"/>
+        <text x="100" y="170" class="eb-label">EXPLORE &amp; BUILD</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>Build something on your own</strong>
+        <ul>
+          <li>I'll circulate — raise your hand if you get stuck</li>
+          <li>Choose an option below and paste the prompt directly into Antigravity</li>
+          <li>Test it thoroughly, click around like a real user would</li>
+          <li>If something breaks, tell the model what you expected vs. what happened</li>
+          <li>Stuck badly? Type "revert to previous version" to undo the last change</li>
+          <li>Try as many as you like, or create your own</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-left:146px;">
+      <div class="prompt-block">
+        <div class="prompt-label">Option 1 — Dark mode</div>
+        <div class="prompt-text" id="prompt-dark">Add a dark mode toggle button. Clicking it switches the app to a dark color scheme. Clicking it again switches back.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-dark', this)">Copy</button>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Option 2 — Sort order</div>
+        <div class="prompt-text" id="prompt-sort">Add a sort control to the right side of the unified search toolbar, separated from the category filter by a vertical divider. It should be a button labeled 'Sort: Newest' by default. Clicking it toggles the notes list between newest-first and oldest-first order, and updates the button label to reflect the current sort direction.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-sort', this)">Copy</button>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Option 3 — Edit notes</div>
+        <div class="prompt-text" id="prompt-edit">Make each note card clickable. Clicking anywhere on a note populates the form with that note's content and changes the Save button label to 'Update Note'. Saving updates the existing note in place. Add a small subtle 'cancel' text link next to the Update Note button that clears the form and returns it to new-note mode.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-edit', this)">Copy</button>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Option 4 — Delete notes</div>
+        <div class="prompt-text" id="prompt-delete">Add a small round delete button in the top-right corner of each note card, no larger than 20px, showing only an ✕ symbol. It should be visible by default without changing any other styling on the card. Clicking it asks the user to confirm before permanently removing the note.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-delete', this)">Copy</button>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Option 5 — Export Notes</div>
+        <div class="prompt-text" id="prompt-export">Add a fixed footer bar spanning the full width of both columns, matching the current app design. Place a right-aligned Export CSV button inside it that downloads all notes as a CSV file with columns for title, date, category, and body.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-export', this)">Copy</button>
+      </div>
+      <div class="prompt-block" style="background:#4a4a4a;border-color:#666;">
+        <div class="prompt-label" style="color:#9acd9a;">Option 6 — Your Own Idea</div>
+        <div class="prompt-text" style="color:#d4d4d4;">Describe your feature, what triggers it, what changes in the UI, and any edge cases. Avoid vague words — say exactly what you want to see. If the result isn't right, prompt again to fix, or type "Revert to previous version" to undo the last update.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 12 — Working Like a Pro: .rules
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-13">
+    <div class="section-label">Section 5 · Working Like a Pro</div>
+    <div class="slide-title">Persistent Instructions</div>
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 200" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.ws-track{fill:#f9f8f4;stroke:#ada191;stroke-width:3.5;stroke-linecap:round}.ws-marker{fill:none;stroke:#ada191;stroke-width:2.5;stroke-dasharray:6,4}.ws-slider{fill:#66995e;stroke:#66995e;stroke-width:3.5}.ws-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:.5px}</style>
+        <rect x="55" y="30" width="90" height="25" rx="12.5" class="ws-track"/>
+        <rect x="55" y="70" width="90" height="25" rx="12.5" class="ws-track"/>
+        <line x1="67.5" y1="30" x2="67.5" y2="55" class="ws-marker"/>
+        <line x1="132.5" y1="70" x2="132.5" y2="95" class="ws-marker"/>
+        <g transform="translate(0,5)">
+          <rect x="110" y="25" width="25" height="25" rx="12.5" class="ws-slider"/>
+          <path d="M118 37.5 L122 41.5 L128 33.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <rect x="65" y="65" width="25" height="25" rx="12.5" class="ws-slider"/>
+          <path d="M73 77.5 L77 81.5 L83 73.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </g>
+        <text x="100" y="160" class="ws-label">WORK SMARTER</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>Rules files</strong>
+        <ul>
+          <li>Encode decisions upfront so you don't repeat yourself in every prompt</li>
+          <li>These are project-specific rules, but most tools also support global defaults</li>
+          <li>Rules file conventions are evolving — research before use</li>
+        </ul>
+        <span style="display:block;margin-top:8px;font-family:'Courier New',monospace;font-size:0.82rem;color:var(--gray-dark);">Antigravity: ~/&lt;your-project&gt;/.agent/rules/project.mdc</span>
+        <span style="display:block;font-family:'Courier New',monospace;font-size:0.82rem;color:var(--gray-dark);">Claude Code: ~/.claude/CLAUDE.md</span>
+      </div>
+    </div>
+
+    <div style="margin-left:146px;">
+    <div class="rules-block">
+<span class="comment"># Persona (How To Work)</span>
+
+<span class="heading">## Interaction Style</span>
+<span class="value">- Be Concise: No conversational filler like "I've updated the file for you."</span>
+<span class="value">- Micro-Steps: Propose one logical change at a time.</span>
+<span class="value">- Clarification: If a prompt is ambiguous, ask ONE clarifying question before coding.</span>
+
+<span class="heading">## Technical Baseline</span>
+<span class="value">- Environment: macOS + Chrome.</span>
+<span class="value">- Simplicity First: Always default to single-file Vanilla HTML/CSS/JS unless a build step is explicitly requested.</span>
+
+<span class="heading">## Context Management</span>
+<span class="value">- Handoff: If the conversation gets long, provide a "State Summary":</span>
+<span class="value">  - What is working.</span>
+<span class="value">  - What is currently "broken" or half-finished.</span>
+<span class="value">  - What the very next step should be.</span>
+
+<span class="comment">---</span>
+<span class="comment"># Rules: (What We're Building)</span>
+
+<span class="heading">## Architecture &amp; Layout</span>
+<span class="value">- Two-Column Layout: Note entry form (left), notes list (right).</span>
+<span class="value">- Unified Toolbar: Full-width top bar.</span>
+<span class="value">  - Left side: Search input.</span>
+<span class="value">  - Right side: Category filter dropdown.</span>
+<span class="value">  - Detail: Use vertical dividers between items.</span>
+
+<span class="heading">## Visual Identity</span>
+<span class="value">- Theme: Minimalist. White background, neutral gray accents.</span>
+<span class="value">- UI Specs: 8px rounded corners, subtle card shadows, readable sans-serif.</span>
+
+<span class="heading">## Data &amp; Features</span>
+<span class="value">- Fields: Title, Body, Date (auto), and Category.</span>
+<span class="value">- Persistence: All data stays in localStorage.</span>
+<span class="value">- Logic:</span>
+<span class="value">  - Real-time search (matches title/body).</span>
+<span class="value">  - Dynamic filtering (category list grows as new categories are typed).</span>
+<span class="value">  - Single-page state management (no reloads).</span>
+    </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 13 — Curated Pro Prompts
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-14">
+    <div class="section-label">Section 5 · Working Like a Pro</div>
+    <div class="slide-title">Curated Prompt Sequence</div>
+
+    <div style="display:inline-flex;align-items:stretch;gap:16px;margin-bottom:18px;">
+      <svg viewBox="-20 -10 240 180" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;width:130px;box-sizing:border-box;">
+        <style>.po-key{fill:#f9f8f4;stroke:#ada191;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}.po-spark{fill:none;stroke:#66995e;stroke-width:3.5;stroke-linecap:round}.po-dot{fill:#F0A050;stroke:none}.po-label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:19px;font-weight:800;fill:#333;text-anchor:middle;letter-spacing:.5px}</style>
+        <g transform="translate(112,60)">
+          <circle cx="-40" cy="0" r="15" class="po-key"/>
+          <circle cx="-40" cy="0" r="5" class="po-dot"/>
+          <rect x="-25" y="-4" width="70" height="8" rx="2" class="po-key"/>
+          <rect x="25" y="4" width="6" height="10" rx="1" class="po-key"/>
+          <rect x="35" y="4" width="6" height="10" rx="1" class="po-key"/>
+        </g>
+        <g>
+          <line x1="160" y1="35" x2="175" y2="20" class="po-spark"/>
+          <line x1="172" y1="60" x2="192" y2="60" class="po-spark"/>
+          <line x1="160" y1="85" x2="175" y2="100" class="po-spark"/>
+        </g>
+        <text x="100" y="150" class="po-label">PAYOFF</text>
+      </svg>
+      <div class="spec-list" style="flex:1;margin-bottom:0;">
+        <strong>One prompt, complete app — made possible by the rules file</strong>
+        <ul>
+          <li>The rules file handles all decisions about layout, style, and data upfront</li>
+          <li>Your prompt only needs to describe <em>what</em> to build, not <em>how</em> to build it</li>
+          <li>The model already knows your stack, your structure, and your standards</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-left:146px;">
+      <div class="prompt-block">
+        <div class="prompt-label">Single prompt for app with all 10 features</div>
+        <div class="prompt-text" id="prompt-pro1">Create a personal knowledge base app. Populate it with 12 sample notes related to [THEME]. Add a full-width search bar that filters notes in real time as the user types. Add a row of category filter buttons above the notes list, including an "All" button. Then redesign the search and filter controls as a single unified toolbar: search input on the left, category filter dropdown button on the right, separated by a vertical divider, with an "x" to clear the selected category. When a new note is added, update the category filter dropdown to include any new category. Add a dark mode toggle button. Add a sort button to the right of the unified toolbar labeled 'Sort: Newest' that toggles between newest-first and oldest-first. Make note cards clickable — clicking one loads it into the form for editing, with a cancel link to return to new-note mode. Add a small round ✕ delete button in the top-right corner of each note card that confirms before deleting. Add a footer with a right-aligned Export CSV button that downloads all notes with title, date, category, and body columns.</div>
+        <button class="copy-btn" onclick="copyPrompt('prompt-pro1', this)">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SLIDE 15 — Wrap-Up
+  ════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-15">
+    <div class="section-label">Wrap-Up</div>
+    <div class="slide-title">We have covered a lot of ground</div>
+
+    <div class="spec-list">
+      <strong>From zero to working app</strong>
+      <ul>
+        <li>Think like a product manager</li>
+        <li>Be as literal and specific as you can</li>
+        <li>Break ideas into small steps</li>
+        <li>Test like a real user would</li>
+        <li>Consider encoding your logic</li>
+      </ul>
+    </div>
+
+    <hr class="divider">
+    <p style="text-align:center;color:var(--maroon);font-size:4.8rem;font-family:Georgia,serif;margin-top:24px;">Thank you!</p>
+  </div>
+
+</div><!-- end #deck -->
+
+<!-- ── Footer ── -->
+<div id="footer">
+  <div id="logo-area">
+    <!-- Lehigh wordmark: full original viewBox, width constrained to show shield + LEHIGH -->
+    <img id="logo-wordmark" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2MDAgODUuODciPjxwYXRoIGQ9Ik00MjcuODIuNzN2ODIuMTkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzU2MjEwMCIgc3Ryb2tlLXdpZHRoPSIuOTgiLz48cGF0aCBkPSJNMS42OSAzLjI0djQxLjY3YzAgMTQuMzggMTYuNjEgMzEuMTUgMjguOTEgMzguOTUgMTIuMy03LjggMjguOTEtMjQuNTcgMjguOTEtMzguOTVWMy4yNEgxLjY5ek01Ny44IDQ0LjkxYzAgMTMuMjItMTUuNiAyOS4yNi0yNy4yMSAzNi45M0MxOSA3NC4xOCAzLjM5IDU4LjE0IDMuMzkgNDQuOTFWNC45M0g1Ny44djM5Ljk4eiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0yMi45MiA2Ny45MWMtMi40NC0xLjMxLTUuMzMtMi4yMS04LjQ0LTIuMDMuNTcuNjggMS4xNiAxLjM3IDEuNzcgMi4wM2g2LjY3em0xNS4zNyAwaDYuNjdjLjYxLS42NiAxLjE4LTEuMzQgMS43Ni0yLjAzLTMuMTEtLjItNS45OS43Mi04LjQ0IDIuMDNoLjAxem0xMS4yNi0yMy4xM2gtMS41OXYxOS42Yy41NC0uNjcgMS4wOC0xLjM0IDEuNTktMi4wNFY0NC43N3ptLTM2LjMxIDBoLTEuNTl2MTcuNTdjLjUxLjY5IDEuMDUgMS4zNyAxLjU5IDIuMDR2LTE5LjZ6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTMwLjIyIDYyLjc0aC43N3Y4LjUyYzIuNzItMi43IDguMzgtNy4yOSAxNS4yNi03LjEzdi0yMi40Yy0xLjQ3LS4xMy0zLjc1LS4zLTUuNS0uMy02LjI4IDAtOC45IDIuNDgtOC45MiAyLjUgMCAwLS43Mi43Ni0uNzIgMy40N0gzMC4xYzAtMi43MS0uNzItMy40Ny0uNzItMy40Ny0uMDItLjAyLTIuNjMtMi41LTguOTItMi41LTEuNzcgMC00LjAzLjE3LTUuNS4zdjIyLjRjNi44OC0uMTYgMTIuNTUgNC40NCAxNS4yNiA3LjEzdi04LjUyem0tNi45MS0xMC42MWMwLTEuMTcuOTUtMy44OCAzLjU4LTMuODhzMy43MyAyLjEyIDMuNzMgMi4xMiAxLjA5LTIuMTIgMy43Mi0yLjEyIDMuNTggMi43MSAzLjU4IDMuODhjMCAzLjgxLTcuMyA3Ljk3LTcuMyA5LjA3IDAtMS4wOS03LjMtNS4yNS03LjMtOS4wN2guMDF6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTU1LjY3IDM4Ljc2czEuMDQtMS40NCAxLjA0LTMuMDFjMC0yLjMxLTIuNy01LjgxLTYuODQtNS44MS0xLjAyIDAtMi4wNi4yLTMuMDcuNTJsOC4zNC0xM0w0MS41MSAyNmMuMTItMS43NyAwLTMuNDIgMS4wOC00LjU2QzQzLjY4IDIwLjI5IDQ2IDIwLjQgNDYgMjAuNHMtLjI3LTEuNjQtMS40Mi0yLjczYy0xLjY3LTEuNTgtNi4wNy0yLjA1LTguOTIuOTUtLjY2LjY5LTEuMiAxLjUzLTEuNjYgMi40MkwzMC41NyA2LjA4bC0zLjg2IDE2Ljc3Yy0xLjE4LTEuMjctMi40Mi0yLjMxLTIuNDktMy44Ni0uMDgtMS41OSAxLjYzLTMuMiAxLjYzLTMuMnMtMS40MS0uOTItMi45OC0uODNjLTIuMy4xMi01LjY2IDIuOTktNS40NCA3LjEyLjA1Ljk4LjI4IDEuOTcuNjMgMi45M0w2LjAyIDE3LjQ3bDkuMiAxNC4zM2MtMi4yMy0uMDUtNC4yMy43Ny01LjgxLS4zNi0xLjI5LS45Mi0xLjQtMy4yOS0xLjQtMy4yOXMtMS42OS41Ni0yLjYgMS44NGMtMS4zNCAxLjg3LTEuMTkgNi4zIDIuMTggOC43IDEuNTkgMS4xNCAzLjY4IDEuNzIgNS42MSAyLjAydi0uNTJzMi42OC0uMjkgNS4yNS0uNDFjLjAzLS4yOS4wNy0uNi4xMS0uODgtMi43NS4yNi02Ljc4LjIzLTkuMDQtMS4zOUM2LjU4IDM1LjQxIDcgMzIuNTcgNyAzMi41N3MuNDIuNzQgMS4xNSAxLjI2YzMuMzQgMi4zOCA2LjUzLS43OCA5LjYxIDEuNDIuNjUuNDcgMS4xMSAxIDEuNCAxLjQyLjI2LS42OS41Ny0xLjM1Ljk1LTEuOThsLTcuMzYtMTAuMSA5LjgyIDcuMTRjLjUtLjQzIDEuMDQtLjgzIDEuNi0xLjE4LTEtLjkxLTQuNC00LjkxLTQuNC03LjkyIDAtMy42MSAyLjMxLTQuNjkgMi4zMS00LjY5cy0uMzEuNzktLjI3IDEuNjhjLjIyIDQuMSA0LjU5IDQuMzQgNC43OSA4LjEzLjAzLjY2LS4wNSAxLjI1LS4xNyAxLjcxLjY3LS4yNCAxLjM3LS40MiAyLjA4LS41NGwyLjA0LTEyLjkgMi4wNCAxMi45Yy42Ni4xMSAxLjMuMjcgMS45Mi40OS0uMDUtMS44NC4zNi01Ljk4IDIuNTgtOC40NiAyLjI1LTIuNTIgNC45OC0xLjY0IDQuOTgtMS42NHMtLjc4LjMxLTEuNC45NmMtMi44MiAyLjk3LjEgNi40OS0yLjUgOS4yMy0uNDMuNDYtLjg5Ljc5LTEuMjkgMS4wMi42LjM2IDEuMTYuNzcgMS42OCAxLjIybDkuODItNy4xNC03LjM2IDEwLjFjLjMxLjUzLjYgMS4wOS44MiAxLjY4IDEuNDItMS40OCA0LjEzLTMuNzcgNy4zNC0zLjc3IDMuNjEgMCA0Ljk0IDIuNjUgNC45NCAyLjY1cy0uNzctLjM2LTEuNjYtLjM2Yy00LjEgMC00Ljk1IDQuMzctOC43MyA0LjM3LS40MSAwLS43OS0uMDQtMS4xMy0uMTIuMDMuMjEuMDIuNDIuMDQuNjQgMS44Ny4wOSAzLjc5LjI2IDQuNzEuMzYgMS45Ny0xLjI1IDMuMjItMy4yMiA1LjIyLTMuMjIgMS41OSAwIDMuMDYgMS44NyAzLjA2IDEuODdsLjAyLS4wM3ptLTcuNyA0LjdoMi45djE3LjAyYzMuNDctNS4xMiA1LjgxLTEwLjUzIDUuODEtMTUuNTd2LTMuNTNoLTguNzF2Mi4wOHpNNC41MyA0NC45MWMwIDUuMDUgMi4zNCAxMC40NCA1LjgxIDE1LjU3VjQzLjQ2aDIuOXYtMi4wOEg0LjUzdjMuNTN6IiBmaWxsPSIjZmZlMzIwIi8+PHBhdGggZD0iTTMwLjYgNDIuN3MuNjMtLjY0IDEuOTktMS4zMmMxLjU1LS43OCA0LjA3LTEuNjEgNy43NS0xLjY3LS41Ny00Ljg4LTQuNzEtOC42Ny05Ljc1LTguNjdzLTkuMTggMy43OS05Ljc1IDguNjdjMy42OC4wNSA2LjIuOSA3Ljc1IDEuNjcgMS4zOC42OSAxLjk5IDEuMzIgMS45OSAxLjMyaC4wMnptMCAzMS41MXMtMi4xNS0yLjY1LTUuNTUtNC45N2gtNy42YzQuMzggNC41OCA5LjE2IDguNTUgMTMuMTQgMTEuMjUgMy45OS0yLjcxIDguNzctNi42NiAxMy4xNC0xMS4yNWgtNy42Yy0zLjQgMi4zMi01LjU0IDQuOTctNS41NCA0Ljk3aC0uMDF6IiBmaWxsPSIjZmZlMzIwIi8+PHBhdGggZD0iTTM0LjMyIDQ4LjI2Yy0yLjYyIDAtMy43MiAyLjEyLTMuNzIgMi4xMnMtMS4wOS0yLjEyLTMuNzMtMi4xMi0zLjU4IDIuNzEtMy41OCAzLjg4YzAgMy44MSA3LjMgNy45NyA3LjMgOS4wNyAwLTEuMDkgNy4zLTUuMjUgNy4zLTkuMDcgMC0xLjE3LS45NS0zLjg4LTMuNTgtMy44OGgtLjAxeiIgZmlsbD0iI2YwNDkzZSIvPjxwYXRoIGQ9Ik0wIDQ0LjkxYzAgMTYuMDEgMTkuMDcgMzMuOTIgMzAuNiA0MC45NiAxMS41My03LjAzIDMwLjYtMjQuOTMgMzAuNi00MC45NlYxLjU0SDB2NDMuMzd6TTEuNjkgMy4yNEg1OS41djQxLjY3YzAgMTQuMzgtMTYuNjEgMzEuMTUtMjguOTEgMzguOTUtMTIuMjktNy44LTI4LjktMjQuNTctMjguOS0zOC45NVYzLjI0eiIgZmlsbD0iIzU2MjEwMCIvPjxwYXRoIGQ9Ik0zMC42IDgxLjg1YzExLjU5LTcuNjcgMjcuMjEtMjMuNzEgMjcuMjEtMzYuOTNWNC45M0gzLjM5djM5Ljk4YzAgMTMuMjIgMTUuNiAyOS4yNiAyNy4yMSAzNi45M3ptMTQuMzctMTMuOTJIMzguM2MyLjQ0LTEuMzEgNS4zMy0yLjIxIDguNDQtMi4wMy0uNTcuNjgtMS4xNiAxLjM3LTEuNzYgMi4wM2gtLjAxem0tMTQuNzUtNS4xN3Y4LjUyYy0yLjcyLTIuNy04LjM4LTcuMjktMTUuMjYtNy4xM3YtMjIuNGMxLjQ4LS4xMyAzLjc1LS4zIDUuNS0uMyA2LjI4IDAgOC45IDIuNDggOC45MiAyLjUgMCAwIC43Mi43Ni43MiAzLjQ3aDEuMDFjMC0yLjcxLjcyLTMuNDcuNzItMy40Ny4wMi0uMDIgMi42My0yLjUgOC45Mi0yLjUgMS43NiAwIDQuMDMuMTcgNS41LjN2MjIuNGMtNi44OC0uMTYtMTIuNTUgNC40NC0xNS4yNiA3LjEzdi04LjUyaC0uNzd6bS05LjM2LTIzLjAzYy41Ny00Ljg4IDQuNzEtOC42NyA5Ljc1LTguNjdzOS4xOCAzLjc5IDkuNzUgOC42N2MtMy42OC4wNS02LjIuOS03Ljc1IDEuNjctMS4zNy42OS0xLjk5IDEuMzItMS45OSAxLjMycy0uNjMtLjY0LTEuOTktMS4zMmMtMS41NS0uNzgtNC4wNy0xLjYxLTcuNzUtMS42N2gtLjAyem0yOC43IDIyLjY0Yy0uNTEuNjktMS4wNSAxLjM3LTEuNTkgMi4wNHYtMTkuNmgxLjU5djE3LjU3em03LjEyLTE3LjQ0YzAgNS4wNS0yLjM0IDEwLjQ0LTUuODEgMTUuNTdWNDMuNDhoLTIuOVY0MS40aDguNzF2My41M3pNNS40NCAyOS45N2MuOTItMS4yOCAyLjYtMS44NCAyLjYtMS44NHMuMSAyLjM3IDEuNCAzLjI5YzEuNTcgMS4xMyAzLjU4LjMgNS44MS4zNmwtOS4yLTE0LjMzIDEyLjA0IDcuNTRjLS4zNS0uOTYtLjU3LTEuOTUtLjYzLTIuOTMtLjIyLTQuMTMgMy4xNC03LjAxIDUuNDQtNy4xMiAxLjU3LS4wOCAyLjk4LjgzIDIuOTguODNzLTEuNyAxLjYxLTEuNjMgMy4yYy4wOCAxLjU1IDEuMzEgMi41OSAyLjQ5IDMuODZMMzAuNiA2LjA2bDMuNDMgMTQuOTZjLjQ2LS44OSAxLTEuNzIgMS42Ni0yLjQyIDIuODUtMyA3LjI0LTIuNTUgOC45Mi0uOTUgMS4xNCAxLjA4IDEuNDIgMi43MyAxLjQyIDIuNzNzLTIuMzItLjEyLTMuNDEgMS4wNGMtMS4wOSAxLjE1LS45NiAyLjgtMS4wOCA0LjU2bDEzLjYzLTguNTQtOC4zNCAxM2MxLjAxLS4zMSAyLjA1LS41MiAzLjA3LS41MiA0LjE0IDAgNi44NCAzLjUgNi44NCA1LjgxIDAgMS41Ny0xLjA0IDMuMDEtMS4wNCAzLjAxcy0xLjQ2LTEuODctMy4wNi0xLjg3Yy0yIDAtMy4yNSAxLjk3LTUuMjIgMy4yMi0uOTItLjA5LTIuODQtLjI3LTQuNzEtLjM2LS4wMi0uMjItLjAyLS40My0uMDQtLjY0LjM0LjA2LjcyLjEyIDEuMTMuMTIgMy43OCAwIDQuNjQtNC4zNyA4LjczLTQuMzcuODkgMCAxLjY2LjM2IDEuNjYuMzZzLTEuMzMtMi42NS00Ljk0LTIuNjVjLTMuMjEgMC01LjkyIDIuMjktNy4zNCAzLjc3LS4yMy0uNTktLjUxLTEuMTUtLjgyLTEuNjhsNy4zNi0xMC4xLTkuODIgNy4xNGMtLjUyLS40Ni0xLjA4LS44Ny0xLjY4LTEuMjIuNC0uMjQuODctLjU2IDEuMjktMS4wMiAyLjYtMi43NC0uMzEtNi4yNSAyLjUtOS4yMy42MS0uNjQgMS40LS45NiAxLjQtLjk2cy0yLjcyLS44OC00Ljk4IDEuNjRjLTIuMjIgMi40OC0yLjYzIDYuNjItMi41OCA4LjQ2LS42Mi0uMjItMS4yNi0uMzgtMS45Mi0uNDlsLTIuMDQtMTIuOS0yLjA0IDEyLjljLS43Mi4xMi0xLjQxLjMtMi4wOC41NC4xMi0uNDcuMjEtMS4wNS4xNy0xLjcxLS4yLTMuNzgtNC41OC00LjAzLTQuNzktOC4xMy0uMDQtLjg5LjI3LTEuNjguMjctMS42OHMtMi4zMSAxLjA5LTIuMzEgNC42OWMwIDMuMDEgMy40IDcuMDEgNC40IDcuOTItLjU2LjM1LTEuMTEuNzUtMS42IDEuMThsLTkuODItNy4xNCA3LjM2IDEwLjFjLS4zOC42My0uNjkgMS4yOS0uOTUgMS45OC0uMjktLjQyLS43NS0uOTUtMS40LTEuNDItMy4wOC0yLjItNi4yNy45Ni05LjYxLTEuNDJhNC40MjcgNC40MjcgMCAwMS0xLjE1LTEuMjZzLS40IDIuODQgMi41MiA0Ljk0YzIuMjUgMS42MSA2LjI4IDEuNjUgOS4wNCAxLjM5LS4wNC4yOS0uMDkuNTktLjExLjg4LTIuNTguMTItNS4yNS40MS01LjI1LjQxdi41MmMtMS45NC0uMjktNC4wMy0uODgtNS42MS0yLjAyLTMuMzctMi40MS0zLjUyLTYuODMtMi4xOC04LjdsLS4wMi4wMnptNC45IDMwLjUyYy0zLjQ3LTUuMTItNS44MS0xMC41My01LjgxLTE1LjU3di0zLjUzaDguNzF2Mi4wOGgtMi45djE3LjAyem0xLjMxLTE1LjcxaDEuNTl2MTkuNmMtLjU0LS42Ny0xLjA4LTEuMzQtMS41OS0yLjA0VjQ0Ljc3em0yLjgzIDIxLjEyYzMuMTEtLjIgNiAuNzIgOC40NCAyLjAzaC02LjY3Yy0uNjEtLjY2LTEuMTgtMS4zNC0xLjc3LTIuMDN6bTEwLjU5IDMuMzRjMy40IDIuMzIgNS41NSA0Ljk3IDUuNTUgNC45N3MyLjEzLTIuNjUgNS41NC00Ljk3aDcuNmMtNC4zOCA0LjU4LTkuMTYgOC41NS0xMy4xNCAxMS4yNS0zLjk5LTIuNzEtOC43Ny02LjY2LTEzLjE0LTExLjI1aDcuNjF6bTY5LjI1LTE2Ljk5YzIuMjEuNTUgNC41LjYzIDYuNjMuNjMgNi40NyAwIDE2LjEtLjI0IDE3LjQ0LTEuNS43OS0uNzIgMS4yNy0zLjM5IDEuNjYtNS4wNWwuOTQtMy45NGgyLjUyYy0uNDggNC4zNC0xLjAzIDkuNjMtMS42NiAxMy41OC0zIC4wOC04LjA1LjI0LTEzLjEuMjRoLTIuNDVjLTcuMTEtLjA4LTEyLjMyLS4yNC0xNy4yMS0uMjQtMi42OSAwLTQuNjYuMTUtNi43MS4yNFY1NC40bDIuNDUtMS4yN2MxLjM0LS43MiAxLjk3LTIuNTIgMS45Ny00LjY2VjExLjA0YzAtMy0uMTYtNS4wNS0uNzItNS45Mi0uNDgtLjc5LTEuNDItMS4xMS0zLjMyLTEuMThsLTMuNzktLjI0VjEuMzNjNC4xMS4xNiA3LjgxLjI0IDExLjY4LjI0IDMuNjMgMCA3LjM1LS4wOCAxMS40NC0uMjR2Mi4zNmwtMy43OS4yNGMtMS45LjA4LTIuODQuMzktMy4zMiAxLjE4LS41NS44Ny0uNzIgMi45My0uNzIgNS45MnY0MS4yMmguMDJ6bTQwLjY1LTQxLjIxYzAtMy0uMTYtNS4wNS0uNzItNS45Mi0uNDgtLjc5LTEuNDItMS4xMS0zLjMyLTEuMThsLTMuNzktLjI0VjEuMzNjMi4yMSAwIDQuNDIuMDggNi42My4xNiAyLjIxIDAgNC41LjA4IDYuNzEuMDggNi44NyAwIDE0LjEzLS4yNCAxOC42Mi0uMjQgMy41NSAwIDcuMTEuMDggMTAuMTguMjQtLjg3IDMuNDgtMS4yNyA3Ljk3LTEuMjcgMTEuOTloLTIuNzZWOC40NGMwLTEuMDMtLjA4LTEuOS0uNzItMi4xMy00LjE4LTEuNTgtMTAuNDItMS42Ni0xNS40Ny0xLjY2LTIuMTMgMC00LjQyLjA4LTYuNjMuNjN2MjEuMDdjMi41Mi4xNiA1LjM2LjI0IDkuMTYuMjQgNC44MSAwIDcuNS0uMzEgOC4zNi0uODcuMzktLjMxLjU1LTEuMDMuNjMtMi4wNWwuMzktNC4xMWgyLjM3Yy0uMDggMy4yNC0uMjQgNi4yNC0uMjQgOS4xNnMuMTYgNS45Mi4yNCA4Ljc3aC0yLjM3bC0uMzktNC42NmMtLjA4LTEuMDMtLjI0LTEuNzMtLjYzLTEuOTctLjg3LS42My0zLjU1LS45NC04LjM2LS45NC0zLjc5IDAtNi43MSAwLTkuMTYuMjR2MjIuMWMyLjIxLjU1IDQuNS42MyA2LjYzLjYzIDYuNDcgMCAxNC41My0uMjQgMTUuOTUtMS4wMyAxLjE4LS42MyAyLjIxLTQuMTEgMi43Ni04Ljg0aDIuNzZjLS43OSAzLjc5LTEuMjcgOC42OC0xLjI3IDEyLjk1LTMgLjA4LTguMDUuMjQtMTMuMS4yNGgtMi40NWMtNi4wOC0uMDgtMTIuMzItLjI0LTE3LjIxLS4yNC0zIDAtNS42LjE1LTguNDUuMjR2LTIuMzZsMi44NC0uMjRjMS45LS4xNiAyLjg0LS4zOSAzLjMyLTEuMTguNTUtLjg3LjcyLTIuOTMuNzItNS45MlYxMS4wNGguMDJ6bTk1Ljc2IDM1LjQ0YzAgMyAuMTUgNS4wNS43IDUuOTIuNDguNzkgMS40MiAxLjExIDMuMzIgMS4xOGwzLjc5LjI0djIuMzZjLTQuMTEtLjE1LTcuODEtLjI0LTExLjQ0LS4yNC0zLjg3IDAtNy41Ny4wOC0xMS42OC4yNHYtMi4zNmwzLjc5LS4yNGMxLjktLjA4IDIuODQtLjM5IDMuMzItMS4xOC41NS0uODcuNzEtMi45My43MS01LjkyVjI4Ljg5Yy0uOTQtLjA4LTMuMDgtLjE2LTYuNTUtLjE2aC0xOC40N2MtMy40OCAwLTUuNi4wOC02LjU1LjE2VjQ2LjVjMCAzIC4xNiA1LjA1LjcyIDUuOTIuNDguNzkgMS40MiAxLjExIDMuMzIgMS4xOGwzLjc5LjI0djIuMzZjLTQuMTEtLjE1LTcuODEtLjI0LTExLjQ0LS4yNC0zLjg3IDAtNy41Ny4wOC0xMS42OC4yNHYtMi4zNmwzLjc5LS4yNGMxLjktLjA4IDIuODQtLjM5IDMuMzItMS4xOC41NS0uODcuNzItMi45My43Mi01LjkyVjExLjA0YzAtMy0uMTYtNS4wNS0uNzItNS45Mi0uNDgtLjc5LTEuNDItMS4xMS0zLjMyLTEuMThsLTMuNzktLjI0VjEuMzNjNC4xMS4xNiA3LjgxLjI0IDExLjY4LjI0IDMuNjMgMCA3LjM1LS4wOCAxMS40NC0uMjR2Mi4zNmwtMy43OS4yNGMtMS45LjA4LTIuODQuMzktMy4zMiAxLjE4LS41NS44Ny0uNzIgMi45My0uNzIgNS45MnYxNC4wNWMuOTQuMDggMy4wOC4xNiA2LjU1LjE2aDE4LjQ3YzMuNDggMCA1LjYtLjA4IDYuNTUtLjE2VjExLjA0YzAtMy0uMTYtNS4wNS0uNzEtNS45Mi0uNDgtLjc5LTEuNDItMS4xMS0zLjMyLTEuMThsLTMuNzktLjI0VjEuMzNjNC4xMS4xNiA3LjgxLjI0IDExLjY4LjI0IDMuNjMgMCA3LjM1LS4wOCAxMS40NC0uMjR2Mi4zNmwtMy43OS4yNGMtMS45LjA4LTIuODQuMzktMy4zMiAxLjE4LS41NS44Ny0uNyAyLjkzLS43IDUuOTJ2MzUuNDV6bTI5Ljk5IDBjMCAzIC4xNiA1LjA1LjcxIDUuOTIuNDguNzkgMS40MiAxLjExIDMuMzIgMS4xOGwzLjc5LjI0djIuMzZjLTQuMTEtLjE1LTcuODEtLjI0LTExLjQ0LS4yNC0zLjg3IDAtNy41Ny4wOC0xMS42OC4yNHYtMi4zNmwzLjc5LS4yNGMxLjktLjA4IDIuODQtLjM5IDMuMzEtMS4xOC41NS0uODcuNzItMi45My43Mi01LjkyVjExLjA0YzAtMy0uMTYtNS4wNS0uNzItNS45Mi0uNDgtLjc5LTEuNDItMS4xMS0zLjMxLTEuMThsLTMuNzktLjI0VjEuMzNjNC4xMS4xNiA3LjgxLjI0IDExLjY4LjI0IDMuNjMgMCA3LjM1LS4wOCAxMS40NC0uMjR2Mi4zNmwtMy43OS4yNGMtMS45LjA4LTIuODQuMzktMy4zMiAxLjE4LS41NS44Ny0uNzEgMi45My0uNzEgNS45MnYzNS40NXptNTguNDgtNi4yM2MwLTEuODItLjYzLTIuNi0yLjY5LTIuNzZsLTYuNTYtLjU1di0yLjM3YzMuMjQuMDggNi40Ny4xNiA5LjYzLjE2czYuNDgtLjA4IDkuNzEtLjE2bC4zMSAxLjk3LTIuMjkuNzljLS44Ny4zMS0uODcuNjMtLjg3IDIuOTN2MTMuMjZjLTYuNzkgMS45Ny0xNS4zMSA0LjAzLTIwLjc2IDQuMDMtMTcuNjEgMC0zMS44MS05LjE2LTMxLjgxLTI4Ljk3IDAtMTcuMzcgMTQuMjktMjguNTcgMzMuMzItMjguNTcgOS43OCAwIDE1Ljk1IDIuMjEgMTkuNTggMy4yNC0uOTQgMy43MS0xLjU4IDcuOS0xLjU4IDExLjk5aC0yLjQ1di00LjE4YzAtMy43MS0yLjg0LTQuOTctNi41NS02LjMyLTIuNTItLjg3LTUuOTItMS40Mi0xMS4wNS0xLjQyLTE0Ljk5IDAtMjIuODIgOS44Ny0yMi44MiAyMy45MiAwIDE1LjcxIDkuMTYgMjcgMjUuNDIgMjcgNi4wOCAwIDEwLjU4LTEuMzQgMTEuMDUtMi43Ni4zMS0uODcuMzktMS4yNy4zOS0zLjI0di03Ljk3aC4wMXptNjkuNTUgNi4yM2MwIDMgLjE1IDUuMDUuNyA1LjkyLjQ4Ljc5IDEuNDIgMS4xMSAzLjMyIDEuMThsMy43OS4yNHYyLjM2Yy00LjExLS4xNS03LjgxLS4yNC0xMS40NC0uMjQtMy44NyAwLTcuNTcuMDgtMTEuNjguMjR2LTIuMzZsMy43OS0uMjRjMS45LS4wOCAyLjg0LS4zOSAzLjMxLTEuMTguNTUtLjg3LjcyLTIuOTMuNzItNS45MlYyOC44OWMtLjk0LS4wOC0zLjA4LS4xNi02LjU2LS4xNmgtMTguNDdjLTMuNDggMC01LjYuMDgtNi41Ni4xNlY0Ni41YzAgMyAuMTYgNS4wNS43MiA1LjkyLjQ4Ljc5IDEuNDIgMS4xMSAzLjMyIDEuMThsMy43OS4yNHYyLjM2Yy00LjExLS4xNS03LjgxLS4yNC0xMS40NC0uMjQtMy44NyAwLTcuNTcuMDgtMTEuNjguMjR2LTIuMzZsMy43OS0uMjRjMS45LS4wOCAyLjg0LS4zOSAzLjMyLTEuMTguNTUtLjg3LjcxLTIuOTMuNzEtNS45MlYxMS4wNGMwLTMtLjE2LTUuMDUtLjcxLTUuOTItLjQ4LS43OS0xLjQyLTEuMTEtMy4zMi0xLjE4bC0zLjc5LS4yNFYxLjMzYzQuMTEuMTYgNy44MS4yNCAxMS42OC4yNCAzLjYzIDAgNy4zNS0uMDggMTEuNDQtLjI0djIuMzZsLTMuNzkuMjRjLTEuOS4wOC0yLjg0LjM5LTMuMzIgMS4xOC0uNTUuODctLjcyIDIuOTMtLjcyIDUuOTJ2MTQuMDVjLjk1LjA4IDMuMDguMTYgNi41Ni4xNmgxOC40N2MzLjQ4IDAgNS42LS4wOCA2LjU2LS4xNlYxMS4wNGMwLTMtLjE2LTUuMDUtLjcyLTUuOTItLjQ4LS43OS0xLjQyLTEuMTEtMy4zMS0xLjE4bC0zLjc5LS4yNFYxLjMzYzQuMTEuMTYgNy44MS4yNCAxMS42OC4yNCAzLjYzIDAgNy4zNS0uMDggMTEuNDQtLjI0djIuMzZsLTMuNzkuMjRjLTEuOS4wOC0yLjg0LjM5LTMuMzIgMS4xOC0uNTUuODctLjcgMi45My0uNyA1LjkydjM1LjQ1ek04NC40NCA2OC45YzAtLjg4LS4wNC0xLjQ3LS4yMS0xLjczLS4xNC0uMjMtLjQxLS4zMy0uOTYtLjM1bC0xLjExLS4wNnYtLjY5YzEuMi4wNCAyLjI5LjA3IDMuNDEuMDcgMS4wNiAwIDIuMTUtLjAyIDMuMzUtLjA3di42OWwtMS4xMS4wNmMtLjU1LjAyLS44My4xMi0uOTYuMzUtLjE2LjI1LS4yMS44Ni0uMjEgMS43M3Y3LjkzYzAgMy4yNyAxLjcgNC4yMSA0Ljc1IDQuMjEgMi40OSAwIDQuNzUtLjk0IDQuNzUtNC43N3YtNy4zOGMwLS44OC0uMDQtMS40Ny0uMjEtMS43My0uMTQtLjIzLS40MS0uMy0uOTYtLjM1bC0xLjAyLS4wNnYtLjY5Yy45Mi4wMiAxLjg0LjA3IDIuNjguMDcuOTIgMCAxLjc2LS4wNCAyLjc2LS4wN3YuNjlsLTEuMDIuMDZjLS41NS4wNC0uODMuMTItLjk2LjM1LS4xNi4yNS0uMjEuODYtLjIxIDEuNzN2Ni42NmMwIDQuOTMtMS44NiA2LjkxLTYuNTIgNi45MS0zLjkyIDAtNi4yMy0xLjE4LTYuMjMtNS40di04LjE4aC0uMDF6bTM3LjM5IDBjMC0uODgtLjA0LTEuNDctLjIxLTEuNzMtLjE0LS4yMy0uNDEtLjMtLjk2LS4zNWwtMS4wMi0uMDd2LS42OWMxLjAyLjAyIDEuOTQuMDYgMi43Ni4wNi40MSAwIC44My0uMDQgMS4yNS0uMDZsMTEuMDIgMTMuNmguMDdWNjguODljMC0uODgtLjA0LTEuNDctLjIxLTEuNzMtLjE0LS4yMy0uNDEtLjMtLjk2LS4zNWwtMS4wMi0uMDd2LS42OWMuOTIuMDIgMS44NC4wNiAyLjY4LjA2LjkyIDAgMS43Ni0uMDQgMi43Ni0uMDZ2LjY5bC0xLjAyLjA3Yy0uNTUuMDQtLjgzLjEyLS45Ni4zNS0uMTYuMjUtLjIxLjg2LS4yMSAxLjczdjEyLjczYzAgLjI3LjA0LjU3LjA2Ljg2bC0yLjA3LS4zNy0xMC44Ni0xMy40OWgtLjA0djEwLjYzYzAgLjg4LjA0IDEuNDcuMjEgMS43My4xNC4yMy40MS4zLjk2LjM1bDEuMDIuMDZ2LjY5Yy0xLjAyLS4wMi0xLjg0LS4wNy0yLjc2LS4wNy0uODMgMC0xLjc2LjA0LTIuNjguMDd2LS42OWwxLjAyLS4wNmMuNTUtLjA0LjgzLS4xMi45Ni0uMzUuMTYtLjI1LjIxLS44Ni4yMS0xLjczVjY4Ljl6bTQwLjk4IDEwLjM1YzAgLjg4LjA0IDEuNDcuMjEgMS43My4xNC4yMy40MS4zMy45Ni4zNWwxLjExLjA3di42OWMtMS4yLS4wNC0yLjI5LS4wNi0zLjM1LS4wNi0xLjEzIDAtMi4yMS4wMi0zLjQxLjA2di0uNjlsMS4xMS0uMDdjLjU1LS4wMi44My0uMTIuOTYtLjM1LjE2LS4yNS4yMS0uODYuMjEtMS43M1Y2OC45YzAtLjg4LS4wNC0xLjQ3LS4yMS0xLjczLS4xNC0uMjMtLjQxLS4zMy0uOTYtLjM1bC0xLjExLS4wNnYtLjY5YzEuMi4wNCAyLjI5LjA3IDMuNDEuMDcgMS4wNiAwIDIuMTUtLjAyIDMuMzUtLjA3di42OWwtMS4xMS4wNmMtLjU1LjAyLS44My4xMi0uOTYuMzUtLjE2LjI1LS4yMS44Ni0uMjEgMS43M3YxMC4zNXptMzEuMS0uMDNsNC4yMS0xMC45Yy4xNC0uMzUuMjEtLjYyLjIxLS44MyAwLS41My0uMzctLjY1LS44MS0uNjdsLTEuMi0uMDZ2LS42OWMuODMuMDIgMS42NC4wNyAyLjQ5LjA3czEuNjYtLjA0IDIuNDktLjA3di42OWwtLjY5LjA2Yy0uNDkuMDQtLjc4LjU1LTEuMjUgMS42NmwtNC4wMSA5LjcxYy0uNTUgMS4zMS0xLjA2IDIuNjMtMS40NyA0LjAzaC0xLjE1Yy0uMzctMS4zNy0uODgtMi42OC0xLjMzLTMuOGwtNC4zMy0xMC42NWMtLjMtLjc0LS42Mi0uOTItMS4wMi0uOTRsLS44My0uMDZ2LS42OWMxLjAyLjAyIDIuMDMuMDcgMy4wNy4wN3MyLjA1LS4wNCAzLjA3LS4wN3YuNjlsLTEuMjkuMDZjLS4zNy4wMi0uNzQuMTItLjc0LjQ3IDAgLjA3IDAgLjE2LjA0LjI1bDQuNTQgMTEuNjloLjAxek0yMjMuOSA2OC45YzAtLjg4LS4wNC0xLjQ3LS4yMS0xLjczLS4xNC0uMjMtLjQxLS4zMy0uOTYtLjM1bC0xLjExLS4wNnYtLjY5Yy42NSAwIDEuMjkuMDIgMS45NC4wNC42NSAwIDEuMzEuMDIgMS45Ni4wMiAyLjAxIDAgNC4xMy0uMDcgNS40NC0uMDcgMS4wNCAwIDIuMDguMDIgMi45OC4wNy0uMjUgMS4wMi0uMzcgMi4zMy0uMzcgMy41aC0uOHYtMS41YzAtLjMtLjAyLS41NS0uMjEtLjYyLTEuMjMtLjQ3LTMuMDUtLjQ5LTQuNTItLjQ5LS42MiAwLTEuMjkuMDItMS45NC4xOHY2LjE1Yy43NC4wNCAxLjU3LjA2IDIuNjguMDYgMS40MSAwIDIuMTktLjEgMi40NS0uMjUuMTItLjEuMTYtLjMuMTgtLjZsLjEyLTEuMmguNjljLS4wMi45NC0uMDcgMS44Mi0uMDcgMi42OHMuMDQgMS43My4wNyAyLjU2aC0uNjlsLS4xMi0xLjM3Yy0uMDItLjMtLjA2LS41MS0uMTgtLjU3LS4yNS0uMTgtMS4wNC0uMjctMi40NS0uMjctMS4xMSAwLTEuOTYgMC0yLjY4LjA2djYuNDZjLjY1LjE2IDEuMzEuMTggMS45NC4xOCAxLjg4IDAgNC4yNC0uMDYgNC42Ni0uMy4zNS0uMTguNjUtMS4yLjgxLTIuNThoLjhjLS4yMyAxLjExLS4zNyAyLjU0LS4zNyAzLjc4LS44OC4wMi0yLjM1LjA3LTMuODIuMDdoLS43MmMtMS43OC0uMDItMy42LS4wNy01LjAzLS4wNy0uODggMC0xLjY0LjA0LTIuNDcuMDd2LS42OWwuODMtLjA3Yy41NS0uMDQuODQtLjEyLjk3LS4zNS4xNi0uMjUuMjEtLjg2LjIxLTEuNzNWNjguODdoLS4wMnptMzUuNyAxMC4zNWMwIC44OC4wNCAxLjQ3LjIxIDEuNzMuMTQuMjMuNDEuMzMuOTYuMzVsMS4xLjA3di42OWMtMS4yLS4wNC0yLjI5LS4wNi0zLjM1LS4wNi0xLjEzIDAtMi4yMS4wMi0zLjQxLjA2di0uNjlsMS4xMS0uMDdjLjU1LS4wMi44My0uMTIuOTYtLjM1LjE2LS4yNS4yMS0uODYuMjEtMS43M1Y2OC45YzAtLjg4LS4wNC0xLjQ3LS4yMS0xLjczLS4xNC0uMjMtLjQxLS4zLS45Ni0uMzVsLS45NC0uMDZ2LS42OWMxLjIyLjAyIDIuNTYuMDcgMy45Mi4wN3MyLjctLjA0IDQuMDMtLjA3aC4yMWMzLjUzIDAgNC40NSAxLjgyIDQuNDUgMy40NiAwIDIuNTEtMi4yNiA0LjAxLTQuNSA0LjQ1bDUuMjMgNi44M2MuMzUuNDYuODYuNTUgMS40MS42di42OWMtLjYtLjAyLTEuMTMtLjA2LTEuNjYtLjA2cy0xLjA0LjA0LTEuNTcuMDZjLS4zLS40My0uNjUtLjgzLS45NC0xLjI1bC00LjI1LTUuN2MtLjM3LS41MS0uOC0uOTQtMS4yLTEuNDNsLjE0LS4yN2MuMi4wMi4zOS4wMi42Mi4wMi40NyAwIC45Mi0uMDQgMS40MS0uMTIgMS42MS0uMjcgMy0xLjUyIDMtMy4yMyAwLTIuNDktMS44NC0zLjE5LTMuNjQtMy4xOS0xLjA0IDAtMS43LjEyLTIuMzUuMjd2MTIuMDRoLjAxem0zOS40Mi05LjM3bC0uMTQtMS4zMWMtLjA3LS42Mi0uMTYtLjg2LTEuMDItMS4zOS0uNjUtLjM5LTEuNjEtLjU1LTIuNTEtLjU1LTEuNjIgMC0zLjQxIDEuMDgtMy40MSAzLjM3IDAgMS41Ny45MiAyLjU0IDMuOCAyLjg2IDMuMjUuMzUgNS4zIDEuMTUgNS4zIDMuNzggMCAzLjk0LTMuNTMgNS44My02Ljk3IDUuODMtMS42MSAwLTMuMTgtLjUxLTMuOTQtLjg4LjE0LS44OC4xNi0xLjguMTYtMi42NXYtLjg4aC43NGwuMTggMS41NWMuMTIuOTYgMS45NCAxLjg0IDMuNzYgMS44NCAyLjA4IDAgNC4xMy0xLjI3IDQuMTMtMy41NXMtMS43LTIuODItNC4wNS0zLjA5Yy0zLjYyLS40MS01LjA1LTEuNTUtNS4wNS0zLjk0IDAtMy41OCAzLjEzLTUuMjEgNS45MS01LjIxIDEuODQgMCAzLjIzLjYgNC4xNy45Ni0uMjMgMS4xNy0uMzMgMi4xNy0uMzMgMy4yNWgtLjczem0yNi45NSA5LjM3YzAgLjg4LjA0IDEuNDcuMjEgMS43My4xNC4yMy40MS4zMy45Ni4zNWwxLjEuMDd2LjY5Yy0xLjItLjA0LTIuMjktLjA2LTMuMzUtLjA2LTEuMTMgMC0yLjIxLjAyLTMuNDEuMDZ2LS42OWwxLjExLS4wN2MuNTUtLjAyLjgzLS4xMi45Ni0uMzUuMTYtLjI1LjIxLS44Ni4yMS0xLjczVjY4LjljMC0uODgtLjA0LTEuNDctLjIxLTEuNzMtLjE0LS4yMy0uNDEtLjMzLS45Ni0uMzVsLTEuMTEtLjA2di0uNjljMS4yLjA0IDIuMjkuMDcgMy40MS4wNyAxLjA2IDAgMi4xNC0uMDIgMy4zNS0uMDd2LjY5bC0xLjEuMDZjLS41NS4wMi0uODMuMTItLjk2LjM1LS4xNi4yNS0uMjEuODYtLjIxIDEuNzN2MTAuMzV6bTI4LjE5LTkuNzZjMC0uODgtLjAyLTEuNjEtLjEtMi4zMWgtMy41OGMtLjY5IDAtLjg4LjIxLS45Mi43NmwtLjA5IDEuODJoLS43MWMwLTEuMjUtLjA0LTIuNTEtLjE2LTMuNzIgMS42NiAwIDMuMzEuMDYgNC45OC4wNmgzLjM1Yy44NCAwIDEuNjYtLjAyIDIuNDktLjA0Ljg0IDAgMS42Ni0uMDIgMi40OS0uMDItLjEyIDEuMi0uMTYgMi40Ny0uMTYgMy43MmgtLjcxbC0uMDktMS44MmMtLjA0LS41NS0uMjMtLjc2LS45Mi0uNzZoLTMuNThjLS4wNi42OS0uMSAxLjQzLS4xIDIuMzF2OS43NWMwIC44OC4wNCAxLjQ3LjIxIDEuNzMuMTQuMjMuNDEuMzMuOTYuMzVsMS4xMS4wNnYuNjljLTEuMi0uMDQtMi4yOS0uMDctMy4zNS0uMDctMS4xMyAwLTIuMjEuMDItMy40MS4wN3YtLjY5bDEuMS0uMDZjLjU1LS4wMi44My0uMTIuOTYtLjM1LjE2LS4yNS4yMS0uODYuMjEtMS43M3YtOS43NWguMDF6bTM1Ljk2IDQuNjZsMi4zNy0zLjc2Yy45Mi0xLjQ1IDEuNzMtMi45IDIuNDktNC4zOGgxLjg0di4zNWMtMS45NCAyLjIzLTQuNzIgNi4xMy01LjY3IDguMTgtLjI3LjYtLjMzIDEuMTgtLjMzIDEuNzN2Mi45OGMwIC44OC4wNCAxLjQ3LjIxIDEuNzMuMTQuMjMuNDEuMzMuOTYuMzVsMS4xMS4wN3YuNjljLTEuMi0uMDQtMi4yOS0uMDYtMy4zNS0uMDYtMS4xMyAwLTIuMjEuMDItMy40MS4wNnYtLjY5bDEuMTEtLjA3Yy41NS0uMDIuODMtLjEyLjk2LS4zNS4xNi0uMjUuMjEtLjg2LjIxLTEuNzN2LTMuMjdjMC0uMzctLjA2LS42OS0uMjEtLjkybC0yLjg2LTQuOThjLTEuMi0yLjA3LTIuMzctMi45My0yLjk1LTNsLS42Ny0uMDZ2LS42N2wyLjY1LS41NXMuMDYtLjAyLjEyLS4wMmMuNDEgMCAuNzIuNDMgMS4wOC44OC4zOS40OS43Mi45NCAxLjAyIDEuNWwzLjI5IDYuMDFoLjAxeiIgZmlsbD0iIzU2MjEwMCIvPjxwYXRoIGQ9Ik00NTcuNDEgMjEuNjRWMi44NWgzLjI5djE1Ljg4aDguMjh2Mi45aC0xMS41N3ptMTQuMTEtMTcuN2MwLTEuMDIuODUtMS44MyAxLjgzLTEuODNzMS44My44MSAxLjgzIDEuODMtLjgxIDEuODMtMS44MyAxLjgzLTEuODMtLjgxLTEuODMtMS44M3ptLjM3IDE3LjY5VjguMDNoMi45NnYxMy42MWgtMi45NnptNi43OS4wMVYyLjg1aDIuOTZ2Ny4wOGMxLjA3LTEuNDQgMi42NC0yLjIyIDQuMzctMi4yMiAzLjQ5IDAgNi4wMiAyLjc2IDYuMDIgNy4xNXMtMi41NyA3LjEzLTYuMDIgNy4xM2MtMS43OCAwLTMuMzMtLjg1LTQuMzctMi4ydjEuODZoLTIuOTZ6bTIuOTYtNC4xYy42NSAxLjAyIDIuMTEgMS44IDMuNDkgMS44IDIuMzYgMCAzLjg2LTEuODYgMy44Ni00LjUxcy0xLjUtNC41NC0zLjg2LTQuNTRjLTEuMzggMC0yLjg1Ljg1LTMuNDkgMS44NnY1LjM4em0xMy40IDQuMVY4LjAzSDQ5OHYyYzEuMDItMS4zIDIuNjQtMi4zMSA0LjQyLTIuMzF2Mi45M2MtLjI1LS4wNS0uNTYtLjA5LS45My0uMDktMS4yMyAwLTIuOS44NS0zLjQ5IDEuOHY5LjI2aC0yLjk2em0xOC4wOSAwdi0xLjQ2Yy0xLjAyIDEuMTYtMi41OSAxLjgtNC40IDEuOC0yLjIyIDAtNC43My0xLjUtNC43My00LjUxczIuNS00LjQyIDQuNzMtNC40MmMxLjgzIDAgMy40MS42IDQuNCAxLjc0di0yLjAzYzAtMS41OC0xLjMtMi41NC0zLjE5LTIuNTQtMS41MiAwLTIuODUuNTYtNC4wMyAxLjcybC0xLjIxLTIuMDZjMS41OC0xLjUgMy41NS0yLjIgNS43Mi0yLjIgMy4wMSAwIDUuNjcgMS4yNyA1LjY3IDQuOTN2OS4wMWgtMi45NnptMC01LjE2Yy0uNjctLjkzLTEuOTQtMS40MS0zLjI0LTEuNDEtMS42NiAwLTIuOS45NS0yLjkgMi40NXMxLjI0IDIuNDMgMi45IDIuNDNjMS4zIDAgMi41Ny0uNDggMy4yNC0xLjQxdi0yLjA2em02Ljc5IDUuMTZWOC4wM2gyLjk2djJjMS4wMi0xLjMgMi42NC0yLjMxIDQuNDItMi4zMXYyLjkzYy0uMjUtLjA1LS41Ni0uMDktLjkzLS4wOS0xLjI0IDAtMi45Ljg1LTMuNDkgMS44djkuMjZoLTIuOTZ6bTkuNjMgMi42N2MuMzEuMTQuNzkuMjMgMS4xMy4yMy45MyAwIDEuNTUtLjI4IDEuOTQtMS4xOGwuNjctMS41NS01LjU4LTEzLjc3aDMuMTVsMy45OCAxMC4yIDMuOTgtMTAuMmgzLjE5bC02LjU3IDE2LjA2Yy0uOTMgMi4zMS0yLjU3IDMuMDQtNC42OCAzLjA3LS40MiAwLTEuMjQtLjA5LTEuNjYtLjJsLjQ1LTIuNjR6bTM3LjI3LTIuNjdoLTMuODZjLS40NS0uNDItMS4wNC0xLjAyLTEuNjYtMS42NC0xLjQxIDEuMTgtMy4xMyAxLjk3LTUuMjYgMS45Ny0zLjM1IDAtNi4wNi0xLjc4LTYuMDYtNS4zNSAwLTIuOSAxLjk0LTQuMzcgNC4wOS01LjQ5LS43OS0xLjQxLTEuMzItMi44Mi0xLjMyLTQuMTIgMC0yLjU0IDIuMTctNC40NSA1LjEtNC40NSAyLjU3IDAgNC42NSAxLjQxIDQuNjUgMy44NiAwIDIuODUtMi4zNCA0LjA1LTQuNjggNS4yMS42Mi44OCAxLjMgMS42OSAxLjgzIDIuMzEuNjIuNzYgMS4yMyAxLjQ2IDEuODYgMi4xNy45LTEuMzUgMS41Mi0yLjg1IDEuODYtMy45MWwyLjQzIDEuMDljLS42NSAxLjUtMS41IDMuMTUtMi41OSA0LjY1IDEuMTMgMS4xOCAyLjMxIDIuMzkgMy42MyAzLjY5aC0uMDJ6bS03LjE4LTMuMzRjLS45My0xLjAyLTEuOC0yLTIuMzEtMi41OWEzOS45MiAzOS45MiAwIDAxLTIuMDgtMi43MWMtMS4yMS44MS0yLjExIDEuOC0yLjExIDMuMzggMCAyLjA2IDEuNTUgMy4yNCAzLjI3IDMuMjQgMS4yMSAwIDIuMzEtLjUzIDMuMjQtMS4zMmgtLjAxem0tMi45OS04LjRjMS43OC0uODUgMy4yMS0xLjc0IDMuMjEtMy4zMyAwLTEuMTYtLjgxLTEuOC0xLjg4LTEuOC0xLjI3IDAtMi4yNS45NS0yLjI1IDIuMzEgMCAuODUuMzkgMS44My45MyAyLjgyem0tOTQuNzYgNDIuMDdWMzYuMDloLTUuNjl2LTIuOWgxNC42OHYyLjloLTUuNjl2MTUuODhoLTMuM3ptMTQuNzktMTMuOTRjNC4wOCAwIDYuNzEgMy4xMyA2LjcxIDcuNDF2LjdoLTEwLjUxYy4yMyAyLjA2IDEuNzggMy43NSA0LjMzIDMuNzUgMS4zMiAwIDIuOS0uNTMgMy44Ni0xLjVsMS4zNSAxLjk0Yy0xLjM1IDEuMy0zLjM1IDEuOTctNS41MyAxLjk3LTQuMDggMC03LjEzLTIuODUtNy4xMy03LjE1IDAtMy45NCAyLjg3LTcuMTMgNi45LTcuMTNoLjAxem0tMy44NCA2LjAyaDcuNjZjLS4wNS0xLjYtMS4xNi0zLjYxLTMuODQtMy42MS0yLjUzIDAtMy42OSAxLjk0LTMuODMgMy42MWguMDF6bTE5LjY3LTYuMDJjMi42NCAwIDQuMjYgMS4xMyA1LjIxIDIuNDNsLTEuOTQgMS44Yy0uNzYtMS4wNy0xLjgtMS42LTMuMTMtMS42LTIuNDggMC00LjEyIDEuODYtNC4xMiA0LjUxczEuNjQgNC41NCA0LjEyIDQuNTRjMS4zMiAwIDIuMzYtLjU2IDMuMTMtMS42bDEuOTQgMS44Yy0uOTUgMS4zLTIuNTcgMi40My01LjIxIDIuNDMtNC4xNCAwLTcuMDQtMy4wMS03LjA0LTcuMTVzMi45LTcuMTMgNy4wNC03LjEzem0xNy4wMiAxMy45NHYtOC41NmMwLTIuMTEtMS4wOS0yLjc2LTIuNzYtMi43Ni0xLjUgMC0yLjc5LjktMy40OSAxLjgzdjkuNDloLTIuOTZWMzMuMThoMi45NnY3LjA0Yy45LTEuMDcgMi42OC0yLjIgNC44Mi0yLjIgMi45MyAwIDQuNCAxLjUyIDQuNCA0LjMxdjkuNjNoLTIuOTd6bTE1Ljk3IDB2LTguNTFjMC0yLjExLTEuMDctMi44Mi0yLjczLTIuODItMS41MiAwLTIuODIuOS0zLjQ5IDEuODN2OS40OWgtMi45NlYzOC4zNWgyLjk2djEuODZjLjktMS4wNyAyLjY0LTIuMiA0Ljc5LTIuMiAyLjkzIDAgNC40IDEuNTggNC40IDQuMzd2OS41OGgtMi45N3ptNS45NC02LjgxYzAtMy44OSAyLjY4LTcuMTMgNi45OS03LjEzczcuMDEgMy4yNCA3LjAxIDcuMTMtMi42NCA3LjE1LTcuMDEgNy4xNS02Ljk5LTMuMjQtNi45OS03LjE1em0xMC45MyAwYzAtMi4zOS0xLjQxLTQuNTEtMy45NC00LjUxcy0zLjkxIDIuMTEtMy45MSA0LjUxIDEuNDEgNC41NCAzLjkxIDQuNTQgMy45NC0yLjExIDMuOTQtNC41NHptNi4wNiA2LjgxVjMzLjE4aDIuOTZ2MTguNzloLTIuOTZ6bTUuOTQtNi44MWMwLTMuODkgMi42OC03LjEzIDYuOTktNy4xM3M3LjAxIDMuMjQgNy4wMSA3LjEzLTIuNjQgNy4xNS03LjAxIDcuMTUtNi45OS0zLjI0LTYuOTktNy4xNXptMTAuOTMgMGMwLTIuMzktMS40MS00LjUxLTMuOTQtNC41MXMtMy45MSAyLjExLTMuOTEgNC41MSAxLjQxIDQuNTQgMy45MSA0LjU0IDMuOTQtMi4xMSAzLjk0LTQuNTR6bTcuMjcgOC4xN2MxLjA5IDEuMjcgMi41IDEuNzQgNC4zMSAxLjc0IDEuOTQgMCA0LjAzLS45IDQuMDMtMy42OXYtMS42NGMtMS4wNCAxLjM1LTIuNTkgMi4yNS00LjM3IDIuMjUtMy40NyAwLTYuMDItMi41LTYuMDItNi45OXMyLjU0LTYuOTkgNi4wMi02Ljk5YzEuNzIgMCAzLjI3Ljc5IDQuMzcgMi4yMnYtMS44OWgyLjk2djEyLjljMCA0LjktMy42MyA2LjIzLTYuOTkgNi4yMy0yLjMxIDAtNC4wMy0uNTEtNS42OS0yLjAzbDEuMzgtMi4xNXptOC4zNC0xMC44M2MtLjY1LTEuMDItMi4xMS0xLjgzLTMuNDktMS44My0yLjM0IDAtMy44NCAxLjc0LTMuODQgNC4zN3MxLjUgNC4zNyAzLjg0IDQuMzdjMS4zOCAwIDIuODUtLjgxIDMuNDktMS44M3YtNS4wN3ptNi42NCAxMi4xNWMuMzEuMTQuNzkuMjMgMS4xMy4yMy45MyAwIDEuNTUtLjI4IDEuOTQtMS4xOGwuNjctMS41NS01LjU4LTEzLjc3aDMuMTVsMy45OCAxMC4yIDMuOTgtMTAuMmgzLjE5bC02LjU3IDE2LjA2Yy0uOTMgMi4zMS0yLjU3IDMuMDQtNC42OCAzLjA3LS40MiAwLTEuMjMtLjA5LTEuNjYtLjJsLjQ1LTIuNjR6TTQ1OC4wMyA3Ny4xM2MxLjMgMS4zOCAzLjMzIDIuNTkgNS45NSAyLjU5czMuNzctMS4zMiAzLjc3LTIuNTdjMC0xLjY5LTItMi4yLTQuMjgtMi43OC0zLjA3LS43Ni02LjY3LTEuNjYtNi42Ny01LjYzIDAtMy4xIDIuNzMtNS40OSA2Ljg1LTUuNDkgMi45MiAwIDUuMy45MyA3LjA0IDIuNjJsLTEuODkgMi40NWMtMS40Ni0xLjQ2LTMuNDctMi4xNS01LjQ0LTIuMTVzLTMuMTkuOTMtMy4xOSAyLjM0IDEuOTIgMS45NCA0LjE0IDIuNWMzLjEuNzkgNi43OSAxLjc0IDYuNzkgNS44MyAwIDMuMTMtMi4yIDUuODEtNy4yNyA1LjgxLTMuNDcgMC01Ljk3LTEuMjEtNy42NC0yLjk5bDEuODMtMi41NHptMjIuMDgtOC43NmM0LjA4IDAgNi43MSAzLjEzIDYuNzEgNy40MXYuN2gtMTAuNTFjLjIzIDIuMDYgMS43OCAzLjc1IDQuMzMgMy43NSAxLjMyIDAgMi45LS41MyAzLjg2LTEuNWwxLjM1IDEuOTRjLTEuMzUgMS4zLTMuMzUgMS45Ny01LjUzIDEuOTctNC4wOCAwLTcuMTMtMi44NS03LjEzLTcuMTUgMC0zLjk0IDIuODctNy4xMyA2LjktNy4xM2guMDF6bS0zLjg0IDYuMDJoNy42NmMtLjA1LTEuNi0xLjE2LTMuNjEtMy44My0zLjYxLTIuNTQgMC0zLjcgMS45NC0zLjg0IDMuNjFoLjAxem0xMy40NyA3LjkyVjY4LjdoMi45NnYyYzEuMDItMS4zIDIuNjQtMi4zMSA0LjQyLTIuMzF2Mi45M2MtLjI1LS4wNS0uNTYtLjA5LS45My0uMDktMS4yMyAwLTIuOS44NS0zLjQ5IDEuOHY5LjI2aC0yLjk2em0xMy4zNiAwbC01LjU1LTEzLjYxaDMuMTVsMy45OCAxMC4yIDMuOTgtMTAuMmgzLjE4bC01LjU1IDEzLjYxaC0zLjJ6bTEwLjIzLTE3LjY5YzAtMS4wMi44NS0xLjgzIDEuODMtMS44M3MxLjgzLjgxIDEuODMgMS44My0uODEgMS44My0xLjgzIDEuODMtMS44My0uODEtMS44My0xLjgzem0uMzcgMTcuNjlWNjguN2gyLjk2djEzLjYxaC0yLjk2em0xMi45OC0xMy45NGMyLjY0IDAgNC4yNiAxLjEzIDUuMjEgMi40M2wtMS45NCAxLjhjLS43Ni0xLjA3LTEuOC0xLjYtMy4xMy0xLjYtMi40OCAwLTQuMTIgMS44Ni00LjEyIDQuNTFzMS42NCA0LjU0IDQuMTIgNC41NGMxLjMyIDAgMi4zNi0uNTYgMy4xMy0xLjZsMS45NCAxLjhjLS45NSAxLjMtMi41NyAyLjQzLTUuMjEgMi40My00LjE0IDAtNy4wNC0zLjAxLTcuMDQtNy4xNXMyLjktNy4xMyA3LjA0LTcuMTN6bTEzLjg2IDBjNC4wOSAwIDYuNzEgMy4xMyA2LjcxIDcuNDF2LjdoLTEwLjUxYy4yMyAyLjA2IDEuNzggMy43NSA0LjMzIDMuNzUgMS4zMiAwIDIuOS0uNTMgMy44Ni0xLjVsMS4zNiAxLjk0Yy0xLjM2IDEuMy0zLjM1IDEuOTctNS41MyAxLjk3LTQuMDkgMC03LjEzLTIuODUtNy4xMy03LjE1IDAtMy45NCAyLjg3LTcuMTMgNi45LTcuMTNoLjAxem0tMy44MyA2LjAyaDcuNjZjLS4wNS0xLjYtMS4xNi0zLjYxLTMuODQtMy42MS0yLjU0IDAtMy42OSAxLjk0LTMuODQgMy42MWguMDF6bTEzLjYzIDQuMDFjLjk1Ljk5IDIuODUgMS45MiA0LjYyIDEuOTJzMi42OC0uNjUgMi42OC0xLjY2YzAtMS4xOC0xLjQ0LTEuNi0zLjEtMS45Ny0yLjM0LS41MS01LjEzLTEuMTMtNS4xMy00LjE3IDAtMi4yMiAxLjkyLTQuMTQgNS4zNS00LjE0IDIuMzEgMCA0LjA1LjgxIDUuMyAxLjkybC0xLjIzIDIuMDhjLS44MS0uOTMtMi4zNC0xLjY0LTQuMDMtMS42NC0xLjU1IDAtMi41NC41Ni0yLjU0IDEuNTIgMCAxLjA0IDEuMzUgMS40MSAyLjk2IDEuNzggMi4zNi41MSA1LjI3IDEuMTggNS4yNyA0LjQgMCAyLjM5LTIuMDEgNC4yMy01LjY3IDQuMjMtMi4zMSAwLTQuNDItLjc0LTUuODMtMi4xMWwxLjM1LTIuMTV6IiBmaWxsPSIjMjMxZjIwIi8+PC9zdmc+">
+  </div>
+  <div id="mode-toggle">
+    <label class="toggle-label" onclick="toggleMode()">Live</label>
+    <div class="toggle-track" id="toggle-track" onclick="toggleMode()">
+      <div class="toggle-thumb"></div>
+    </div>
+    <label class="toggle-label" onclick="toggleMode()">Solo</label>
+  </div>
+  <div id="nav-area">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← <span class="btn-text">Prev</span></button>
+    <span id="slide-counter">1 / 15</span>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)"><span class="btn-text">Next</span> →</button>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    document.getElementById('slide-counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('btn-prev').disabled = current === 0;
+    document.getElementById('btn-next').disabled = current === total - 1;
+  }
+
+  function navigate(dir) { showSlide(current + dir); }
+
+  function toggleMode() {
+    const body = document.body;
+    const track = document.getElementById('toggle-track');
+    if (body.classList.contains('live')) {
+      body.classList.remove('live');
+      track.classList.add('on');
+    } else {
+      body.classList.add('live');
+      track.classList.remove('on');
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
+  });
+
+  let selectedTheme = '[THEME]';
+
+  function selectTheme(chip, theme) {
+    selectedTheme = theme;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const placeholder = document.getElementById('theme-placeholder');
+    if (placeholder) {
+      placeholder.textContent = theme;
+      placeholder.style.background = '#2d4a2d';
+      placeholder.style.color = '#6a9955';
+    }
+  }
+
+  function copyPrompt(id, btn) {
+    const el = document.getElementById(id);
+    // Collect text from text nodes and spans only, skipping buttons
+    let text = '';
+    el.childNodes.forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        text += node.textContent;
+      } else if (node.nodeName !== 'BUTTON') {
+        text += node.textContent;
+      }
+    });
+    text = text.trim();
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => flashCopied(btn));
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      flashCopied(btn);
+    }
+  }
+
+  function flashCopied(btn) {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+  }
+</script>
+</body>
+</html>
